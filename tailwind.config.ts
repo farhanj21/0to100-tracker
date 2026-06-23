@@ -53,10 +53,6 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Podium accents
-        gold: "hsl(45 90% 55%)",
-        silver: "hsl(220 9% 70%)",
-        bronze: "hsl(28 70% 52%)",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,6 +61,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       keyframes: {
@@ -75,9 +72,6 @@ const config: Config = {
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
-        },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
         },
       },
       animation: {
