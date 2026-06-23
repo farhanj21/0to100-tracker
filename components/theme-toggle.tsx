@@ -11,21 +11,31 @@ export function ThemeToggle({ className }: { className?: string }) {
   useEffect(() => {
     setMounted(true);
     setDark(document.documentElement.classList.contains("dark"));
-    // Enable theme cross-fade transitions only after the first paint, so the
-    // no-flash initial theme doesn't animate in.
-    const id = requestAnimationFrame(() =>
-      document.documentElement.classList.add("theme-ready")
-    );
-    return () => cancelAnimationFrame(id);
   }, []);
 
   function toggle() {
     const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    try {
-      localStorage.setItem("theme", next ? "dark" : "light");
-    } catch {}
+    const apply = () => {
+      document.documentElement.classList.toggle("dark", next);
+      setDark(next);
+      try {
+        localStorage.setItem("theme", next ? "dark" : "light");
+      } catch {}
+    };
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const startViewTransition = (
+      document as Document & {
+        startViewTransition?: (cb: () => void) => void;
+      }
+    ).startViewTransition;
+
+    // A single composited crossfade where supported; instant flip otherwise.
+    if (!reduce && typeof startViewTransition === "function") {
+      startViewTransition.call(document, apply);
+    } else {
+      apply();
+    }
   }
 
   return (
