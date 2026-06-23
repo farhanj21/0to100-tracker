@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Position pill. Top 3 get medal colors (gold/silver/bronze); the rest get a
- * neutral monospaced number.
+ * Editorial rank numeral: "No.01". Top 3 take the accent; the rest are muted.
+ * No medals/rings — numbering carries the hierarchy.
  */
 export function RankBadge({
   position,
@@ -11,24 +11,19 @@ export function RankBadge({
   position: number;
   size?: "md" | "lg";
 }) {
-  const medal =
-    position === 1
-      ? "bg-gold/15 text-gold ring-gold/40"
-      : position === 2
-        ? "bg-silver/15 text-silver ring-silver/40"
-        : position === 3
-          ? "bg-bronze/15 text-bronze ring-bronze/40"
-          : "bg-secondary text-muted-foreground ring-border";
-
+  const top = position <= 3;
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-md font-mono font-bold tabular-nums ring-1",
-        medal,
-        size === "lg" ? "h-12 w-12 text-xl" : "h-9 w-9 text-sm"
+        "inline-flex items-baseline font-mono font-semibold tabular-nums leading-none",
+        top ? "text-primary" : "text-muted-foreground",
+        size === "lg" ? "text-3xl" : "text-xl"
       )}
     >
-      {position}
+      <span className="mr-0.5 text-[0.55em] uppercase tracking-wide opacity-60">
+        No.
+      </span>
+      {String(position).padStart(2, "0")}
     </span>
   );
 }

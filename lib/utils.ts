@@ -31,3 +31,14 @@ export function ordinal(n: number): string {
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
+
+/**
+ * Map a 0–100 km/h time (seconds) to a 0..1 fill where quicker is fuller.
+ * Fixed domain so a car's bar means the same on every screen. Clamped.
+ */
+export function accelFill(seconds: number): number {
+  const FAST = 2;
+  const SLOW = 14;
+  const t = (SLOW - seconds) / (SLOW - FAST);
+  return Math.max(0.04, Math.min(1, t));
+}
