@@ -16,10 +16,8 @@ import { getCarById, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
-import { RankBadge } from "@/components/leaderboard/rank-badge";
 import { CountUp } from "@/components/count-up";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatEngine, carTitle, ordinal } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -84,69 +82,66 @@ export default async function CarDetailPage({
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-10">
         {/* Gallery — "Set as thumbnail" only available to admins */}
         <Gallery media={car.media} carId={authed ? car.id : undefined} />
 
-        {/* Summary */}
-        <div className="space-y-5">
-          <div className="border border-border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <RankBadge position={car.position} size="lg" />
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Rank {ordinal(car.position)}{" "}
-                <span className="text-muted-foreground/60">of {total}</span>
-              </p>
-            </div>
+        {/* Headline + stat — mirrors the home cover-story language. */}
+        <div className="flex flex-col justify-center">
+          <span className="self-start bg-primary px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
+            No.{String(car.position).padStart(2, "0")}
+          </span>
 
-            <div className="mt-5 border-t border-border pt-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                0–100 km/h
-              </p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <CountUp
-                  value={car.zeroToHundred}
-                  className="font-mono text-6xl font-bold tabular-nums tracking-tight text-primary"
-                />
-                <span className="font-mono text-lg text-muted-foreground">s</span>
-              </div>
-              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                {car.position === 1 ? (
-                  marginToNext > 0.0001 ? (
-                    <>
-                      <span className="font-bold text-primary">
-                        {marginToNext.toFixed(2)} s
-                      </span>{" "}
-                      clear of P2
-                    </>
-                  ) : (
-                    "Fastest on the board"
-                  )
-                ) : (
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Rank {ordinal(car.position)}{" "}
+            <span className="text-muted-foreground/50">of {total}</span>
+          </p>
+
+          <h1 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
+            {car.manufacturer}{" "}
+            <span className="text-muted-foreground">
+              {car.carModel}
+              {car.variant ? ` ${car.variant}` : ""}
+            </span>
+          </h1>
+
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
+            {car.transmission} · {car.powertrainType}
+          </p>
+
+          <div className="mt-7 border-t border-border pt-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+              0–100 km/h
+            </p>
+            <div className="-ml-1 mt-1 flex items-baseline gap-2">
+              <CountUp
+                value={car.zeroToHundred}
+                className="font-mono text-7xl font-bold leading-[0.8] tracking-tighter sm:text-8xl"
+              />
+              <span className="font-mono text-2xl text-muted-foreground">s</span>
+            </div>
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              {car.position === 1 ? (
+                marginToNext > 0.0001 ? (
                   <>
                     <span className="font-bold text-primary">
-                      +{gap.toFixed(2)} s
+                      {marginToNext.toFixed(2)} s
                     </span>{" "}
-                    off the lead
+                    clear of P2
                   </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <h1 className="font-display text-4xl leading-none tracking-tight sm:text-5xl">
-              {car.manufacturer}{" "}
-              <span className="text-muted-foreground">
-                {car.carModel}
-                {car.variant ? ` ${car.variant}` : ""}
-              </span>
-            </h1>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Badge variant="default">{car.powertrainType}</Badge>
-              <Badge variant="outline">{car.induction}</Badge>
-              <Badge variant="outline">{car.transmission}</Badge>
-            </div>
+                ) : (
+                  "Fastest on the board"
+                )
+              ) : (
+                <>
+                  <span className="font-bold text-primary">
+                    +{gap.toFixed(2)} s
+                  </span>{" "}
+                  off the lead
+                </>
+              )}
+            </p>
           </div>
         </div>
       </div>

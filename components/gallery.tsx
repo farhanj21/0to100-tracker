@@ -13,7 +13,7 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
-import { cn, cloudinaryThumb } from "@/lib/utils";
+import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
 import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
@@ -93,13 +93,14 @@ export function Gallery({
 
   return (
     <div className="space-y-3">
-      {/* Hero (current thumbnail) */}
+      {/* Hero (current thumbnail) — taller box + contain so portrait shots
+          show in full, large, instead of being cropped small. */}
       <button
         type="button"
         onClick={() => setActive(0)}
-        className="group relative block aspect-video w-full overflow-hidden ring-1 ring-border"
+        className="group relative block aspect-[4/3] w-full overflow-hidden bg-secondary ring-1 ring-border"
       >
-        <MediaTile media={hero} />
+        <MediaTile media={hero} contain />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         {canManage && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
@@ -243,8 +244,37 @@ export function Gallery({
   );
 }
 
-function MediaTile({ media, thumb }: { media: MediaDTO; thumb?: boolean }) {
+function MediaTile({
+  media,
+  thumb,
+  contain,
+}: {
+  media: MediaDTO;
+  thumb?: boolean;
+  /** Fit the whole image with a blurred fill behind it (no crop). */
+  contain?: boolean;
+}) {
   if (media.type === "image") {
+    if (contain) {
+      return (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cloudinaryBlurFill(media.path, 64, 48)}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full scale-110 object-cover"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cloudinaryThumb(media.path, 720, 540, "fit")}
+            alt=""
+            className="relative h-full w-full object-contain [filter:contrast(1.04)_saturate(1.06)]"
+            loading="lazy"
+          />
+        </>
+      );
+    }
     const src = thumb
       ? cloudinaryThumb(media.path, 120, 120, "fill")
       : cloudinaryThumb(media.path, 640, 360, "fill");
