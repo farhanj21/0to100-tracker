@@ -37,7 +37,7 @@ export default function RootLayout({
         <footer className="border-t border-border/60 py-6 mt-10">
           <div className="container text-xs text-muted-foreground flex items-center justify-between">
             <span>0–100 Tracker</span>
-            <span className="tabular-nums">Ranked by acceleration</span>
+            <span className="tabular-nums">Developed by Kensu</span>
           </div>
         </footer>
         <Toaster />

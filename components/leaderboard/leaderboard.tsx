@@ -2,18 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { SearchX } from "lucide-react";
+import { SearchX, LayoutList, Table2 } from "lucide-react";
 import { Podium } from "@/components/leaderboard/podium";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
+import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import {
   Filters,
   EMPTY_FILTERS,
   type FilterState,
 } from "@/components/leaderboard/filters";
+import { cn } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
+
+type View = "cards" | "table";
 
 export function Leaderboard({ cars }: { cars: CarDTO[] }) {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  const [view, setView] = useState<View>("cards");
 
   const manufacturers = useMemo(
     () =>
@@ -63,8 +68,14 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           totalCount={cars.length}
         />
 
+        <div className="flex justify-end">
+          <ViewToggle view={view} onChange={setView} />
+        </div>
+
         {filtered.length === 0 ? (
           <EmptyResults />
+        ) : view === "table" ? (
+          <LeaderboardTable cars={filtered} />
         ) : (
           <motion.div layout className="space-y-2.5">
             <AnimatePresence initial={false}>
@@ -75,6 +86,43 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           </motion.div>
         )}
       </section>
+    </div>
+  );
+}
+
+function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: View;
+  onChange: (v: View) => void;
+}) {
+  const options: { value: View; label: string; icon: typeof LayoutList }[] = [
+    { value: "cards", label: "Cards", icon: LayoutList },
+    { value: "table", label: "Table", icon: Table2 },
+  ];
+  return (
+    <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+      {options.map((opt) => {
+        const active = view === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            aria-pressed={active}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              active
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <opt.icon className="h-3.5 w-3.5" />
+            {opt.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
