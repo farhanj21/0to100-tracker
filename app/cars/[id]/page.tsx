@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   ArrowLeft,
   Pencil,
-  Trophy,
   Calendar,
   Gauge,
   Wind,
@@ -18,10 +17,10 @@ import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
 import { RankBadge } from "@/components/leaderboard/rank-badge";
+import { AccelBar } from "@/components/accel-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  cn,
   formatTime,
   formatEngine,
   carTitle,
@@ -36,8 +35,8 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const car = await getCarById(params.id);
-  if (!car) return { title: "Car not found — 0–100 Tracker" };
-  return { title: `${carTitle(car)} — 0–100 Tracker` };
+  if (!car) return { title: "Car not found · 0–100 Tracker" };
+  return { title: `${carTitle(car)} · 0–100 Tracker` };
 }
 
 export default async function CarDetailPage({
@@ -52,7 +51,6 @@ export default async function CarDetailPage({
   if (!car) notFound();
 
   const authed = isAuthenticated();
-  const isPodium = car.position <= 3;
 
   const specs = [
     { icon: Calendar, label: "Model year", value: String(car.modelYear) },
@@ -91,45 +89,36 @@ export default async function CarDetailPage({
 
         {/* Summary */}
         <div className="space-y-5">
-          <div
-            className={cn(
-              "rounded-xl border bg-card p-5",
-              isPodium ? "border-primary/40" : "border-border"
-            )}
-          >
-            <div className="flex items-center gap-3">
+          <div className="border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
               <RankBadge position={car.position} size="lg" />
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Global rank
-                </p>
-                <p className="text-lg font-semibold">
-                  {ordinal(car.position)}{" "}
-                  <span className="text-muted-foreground">
-                    of {total}
-                  </span>
-                </p>
-              </div>
-              {isPodium && (
-                <Trophy className="ml-auto h-6 w-6 text-gold" />
-              )}
+              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Rank {ordinal(car.position)}{" "}
+                <span className="text-muted-foreground/60">of {total}</span>
+              </p>
             </div>
 
             <div className="mt-5 border-t border-border pt-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                 0–100 km/h
               </p>
-              <div className="flex items-baseline gap-2">
+              <div className="mt-1 flex items-baseline gap-2">
                 <span className="font-mono text-5xl font-bold tabular-nums text-primary">
                   {formatTime(car.zeroToHundred)}
                 </span>
-                <span className="text-lg text-muted-foreground">seconds</span>
+                <span className="font-mono text-lg text-muted-foreground">s</span>
               </div>
+              <AccelBar
+                seconds={car.zeroToHundred}
+                accent
+                showScale
+                className="mt-4"
+              />
             </div>
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="font-display text-3xl font-semibold tracking-tight">
               {car.manufacturer}{" "}
               <span className="text-muted-foreground">
                 {car.carModel}
@@ -147,14 +136,14 @@ export default async function CarDetailPage({
 
       {/* Spec sheet */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+        <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Spec sheet
         </h2>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {specs.map((spec) => (
             <div
               key={spec.label}
-              className="rounded-lg border border-border bg-card/50 p-4"
+              className="border border-border bg-card p-4"
             >
               <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <spec.icon className="h-3.5 w-3.5" /> {spec.label}
@@ -168,10 +157,10 @@ export default async function CarDetailPage({
       {/* Full specifications (extended, from auto-fill or manual entry) */}
       {car.specs.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+          <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Full specifications
           </h2>
-          <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
             {car.specs.map((s, i) => (
               <div
                 key={`${s.label}-${i}`}
@@ -188,14 +177,14 @@ export default async function CarDetailPage({
       {/* Features */}
       {car.features.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+          <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Features
           </h2>
           <ul className="flex flex-wrap gap-2">
             {car.features.map((f, i) => (
               <li
                 key={`${f}-${i}`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-sm"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-card px-2.5 py-1 text-sm"
               >
                 <Check className="h-3.5 w-3.5 text-primary" /> {f}
               </li>
