@@ -3,13 +3,19 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CarThumb } from "@/components/car-thumb";
-import { AccelBar } from "@/components/accel-bar";
 import { CountUp } from "@/components/count-up";
 import { formatEngine } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
 /** Cover-story treatment of the single globally quickest car. */
-export function LeaderHero({ car }: { car: CarDTO }) {
+export function LeaderHero({
+  car,
+  marginToNext,
+}: {
+  car: CarDTO;
+  /** Seconds the leader is clear of P2 (0 if it's the only car). */
+  marginToNext: number;
+}) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
@@ -23,7 +29,10 @@ export function LeaderHero({ car }: { car: CarDTO }) {
       >
         {/* Photo */}
         <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
-          <CarThumb car={car} className="h-full w-full rounded-none ring-0" />
+          <CarThumb
+            car={car}
+            className="h-full w-full rounded-none ring-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          />
         </div>
 
         {/* Info */}
@@ -40,19 +49,32 @@ export function LeaderHero({ car }: { car: CarDTO }) {
             {car.modelYear} · {car.powertrainType}
           </p>
 
-          <div className="mt-auto flex items-baseline gap-3 pt-8">
-            <CountUp
-              value={car.zeroToHundred}
-              className="font-mono text-7xl font-bold leading-[0.8] tracking-tighter sm:text-8xl"
-            />
-            <span className="font-mono text-[11px] uppercase leading-tight tracking-[0.15em] text-muted-foreground">
-              s<br />0–100<br />km/h
-            </span>
+          <div className="mt-auto pt-8">
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+              0–100 km/h
+            </p>
+            <div className="mt-1 flex items-baseline gap-2">
+              <CountUp
+                value={car.zeroToHundred}
+                className="font-mono text-7xl font-bold leading-[0.82] tracking-tighter sm:text-8xl"
+              />
+              <span className="font-mono text-xl text-muted-foreground">s</span>
+            </div>
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              Fastest
+              {marginToNext > 0.0001 && (
+                <>
+                  {" — "}
+                  <span className="font-bold text-primary">
+                    {marginToNext.toFixed(2)} s
+                  </span>{" "}
+                  clear of P2
+                </>
+              )}
+            </p>
           </div>
 
-          <AccelBar seconds={car.zeroToHundred} accent className="mt-6" />
-
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+          <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
             {formatEngine(car.engineSize)} · {car.induction} · {car.transmission}{" "}
             · {car.powertrainType}
           </p>

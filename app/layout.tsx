@@ -49,6 +49,7 @@ export default function RootLayout({
       <body
         className={`${instrumentSerif.variable} ${archivo.variable} ${spaceMono.variable} font-sans min-h-screen`}
       >
+        <div className="grain" aria-hidden />
         <SiteHeader />
         <main className="container py-8">{children}</main>
         <footer className="border-t border-border/60 py-6 mt-10">

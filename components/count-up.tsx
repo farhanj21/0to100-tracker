@@ -10,7 +10,7 @@ import { useReducedMotion } from "framer-motion";
 export function CountUp({
   value,
   decimals = 2,
-  durationMs = 900,
+  durationMs = 1100,
   className,
 }: {
   value: number;
@@ -32,8 +32,8 @@ export function CountUp({
 
     let raf = 0;
     let start = 0;
-    // easeOutExpo — a quick surge that settles, like a run completing.
-    const ease = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    // easeOutQuart — smooth deceleration that settles cleanly onto the value.
+    const ease = (t: number) => 1 - Math.pow(1 - t, 4);
 
     const tick = (now: number) => {
       if (!start) start = now;

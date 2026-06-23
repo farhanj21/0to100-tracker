@@ -33,12 +33,10 @@ export function ordinal(n: number): string {
 }
 
 /**
- * Map a 0–100 km/h time (seconds) to a 0..1 fill where quicker is fuller.
- * Fixed domain so a car's bar means the same on every screen. Clamped.
+ * Format a gap to the leader, e.g. 0.3 -> "+0.30". A leader (0) renders as an
+ * em dash so the row reads "no gap".
  */
-export function accelFill(seconds: number): number {
-  const FAST = 2;
-  const SLOW = 14;
-  const t = (SLOW - seconds) / (SLOW - FAST);
-  return Math.max(0.04, Math.min(1, t));
+export function formatGap(seconds: number): string {
+  if (seconds <= 0.0001) return "—";
+  return `+${seconds.toFixed(2)}`;
 }

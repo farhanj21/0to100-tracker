@@ -12,12 +12,11 @@ import {
   Hash,
   Check,
 } from "lucide-react";
-import { getCarById, getCarCount } from "@/lib/cars";
+import { getCarById, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
 import { RankBadge } from "@/components/leaderboard/rank-badge";
-import { AccelBar } from "@/components/accel-bar";
 import { CountUp } from "@/components/count-up";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,11 +39,17 @@ export default async function CarDetailPage({
 }: {
   params: { id: string };
 }) {
-  const [car, total] = await Promise.all([
-    getCarById(params.id),
-    getCarCount(),
-  ]);
+  const ranked = await getRankedCars();
+  const car = ranked.find((c) => c.id === params.id);
   if (!car) notFound();
+
+  const total = ranked.length;
+  const leaderTime = ranked[0]?.zeroToHundred ?? car.zeroToHundred;
+  const gap = car.zeroToHundred - leaderTime;
+  const marginToNext =
+    car.position === 1 && ranked[1]
+      ? ranked[1].zeroToHundred - car.zeroToHundred
+      : 0;
 
   const authed = isAuthenticated();
 
@@ -105,12 +110,28 @@ export default async function CarDetailPage({
                 />
                 <span className="font-mono text-lg text-muted-foreground">s</span>
               </div>
-              <AccelBar
-                seconds={car.zeroToHundred}
-                accent
-                showScale
-                className="mt-4"
-              />
+              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                {car.position === 1 ? (
+                  marginToNext > 0.0001 ? (
+                    <>
+                      Fastest —{" "}
+                      <span className="font-bold text-primary">
+                        {marginToNext.toFixed(2)} s
+                      </span>{" "}
+                      clear of P2
+                    </>
+                  ) : (
+                    "Fastest on the board"
+                  )
+                ) : (
+                  <>
+                    <span className="font-bold text-primary">
+                      +{gap.toFixed(2)} s
+                    </span>{" "}
+                    off the lead
+                  </>
+                )}
+              </p>
             </div>
           </div>
 

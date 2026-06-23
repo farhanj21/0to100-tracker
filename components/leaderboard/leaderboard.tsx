@@ -56,11 +56,13 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
 
   // The cover hero is always the true global #1; the board lists the rest.
   const hero = cars[0];
+  const leaderTime = hero.zeroToHundred;
+  const marginToNext = cars[1] ? cars[1].zeroToHundred - leaderTime : 0;
   const boardCars = filtered.filter((c) => c.id !== hero.id);
 
   return (
     <div className="space-y-10">
-      <LeaderHero car={hero} />
+      <LeaderHero car={hero} marginToNext={marginToNext} />
 
       <section className="space-y-4">
         <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
@@ -89,8 +91,13 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
         ) : (
           <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
-              {boardCars.map((car) => (
-                <LeaderboardRow key={car.id} car={car} />
+              {boardCars.map((car, i) => (
+                <LeaderboardRow
+                  key={car.id}
+                  car={car}
+                  gap={car.zeroToHundred - leaderTime}
+                  index={i}
+                />
               ))}
             </AnimatePresence>
           </motion.div>

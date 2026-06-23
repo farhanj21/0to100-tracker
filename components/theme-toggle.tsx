@@ -11,6 +11,12 @@ export function ThemeToggle({ className }: { className?: string }) {
   useEffect(() => {
     setMounted(true);
     setDark(document.documentElement.classList.contains("dark"));
+    // Enable theme cross-fade transitions only after the first paint, so the
+    // no-flash initial theme doesn't animate in.
+    const id = requestAnimationFrame(() =>
+      document.documentElement.classList.add("theme-ready")
+    );
+    return () => cancelAnimationFrame(id);
   }, []);
 
   function toggle() {

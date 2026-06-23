@@ -36,35 +36,35 @@
     --radius: 0.2rem;
   }
 
-  /* ☾ Dark — true near-black, cream type, same signal in blocks. */
+  /* ☾ Dark — warm espresso charcoal (not near-black), cream type, grain. */
   .dark {
-    --background: 45 13% 6%;
-    --foreground: 44 25% 92%;
+    --background: 36 18% 9%;
+    --foreground: 40 28% 91%;
 
-    --card: 44 18% 8%;
-    --card-foreground: 44 25% 92%;
+    --card: 36 18% 11%;
+    --card-foreground: 40 28% 91%;
 
-    --popover: 44 18% 8%;
-    --popover-foreground: 44 25% 92%;
+    --popover: 36 18% 11%;
+    --popover-foreground: 40 28% 91%;
 
-    --primary: 13 100% 57%;
+    --primary: 14 100% 58%;
     --primary-foreground: 48 14% 7%;
 
-    --secondary: 44 14% 12%;
-    --secondary-foreground: 44 25% 92%;
+    --secondary: 36 16% 15%;
+    --secondary-foreground: 40 28% 91%;
 
-    --muted: 44 14% 12%;
-    --muted-foreground: 44 8% 52%;
+    --muted: 36 16% 15%;
+    --muted-foreground: 38 11% 56%;
 
-    --accent: 13 100% 57%;
+    --accent: 14 100% 58%;
     --accent-foreground: 48 14% 7%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 42 16% 14%;
-    --input: 42 16% 14%;
-    --ring: 13 100% 57%;
+    --border: 36 18% 17%;
+    --input: 36 18% 17%;
+    --ring: 14 100% 58%;
   }
 }
 
@@ -75,6 +75,15 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+
+  /* Buttery theme cross-fade. Enabled only after first paint (.theme-ready on
+     <html>) so the no-flash initial render doesn't animate. */
+  .theme-ready *,
+  .theme-ready *::before,
+  .theme-ready *::after {
+    transition: background-color 0.4s ease, border-color 0.4s ease,
+      color 0.4s ease, fill 0.4s ease;
+  }
 }
 
 @layer utilities {
@@ -84,6 +93,28 @@
   /* Hairline rule used in editorial lists/spec boxes. */
   .rule {
     border-color: hsl(var(--border));
+  }
+}
+
+/* Film grain — gives the dark theme a crafted, cinematic surface instead of a
+   flat default-dark look. Subtle in light, stronger in dark. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .grain {
+  opacity: 0.07;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-ready *,
+  .theme-ready *::before,
+  .theme-ready *::after {
+    transition: none;
   }
 }
 

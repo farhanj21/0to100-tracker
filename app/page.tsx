@@ -36,7 +36,7 @@ export default async function HomePage() {
 function PageIntro({ count }: { count: number }) {
   return (
     <div>
-      <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+      <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground duration-500 animate-in fade-in motion-reduce:animate-none">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
         Live ranking
         <span className="text-muted-foreground/50">·</span>
@@ -44,7 +44,7 @@ function PageIntro({ count }: { count: number }) {
         <span className="text-muted-foreground/50">·</span>
         0–100 km/h
       </div>
-      <h1 className="mt-2 font-display text-6xl leading-[0.92] tracking-tight sm:text-8xl">
+      <h1 className="mt-2 font-display text-6xl leading-[0.92] tracking-tight duration-700 animate-in fade-in slide-in-from-bottom-3 motion-reduce:animate-none sm:text-8xl">
         The <span className="italic">Quickest</span>
       </h1>
     </div>
