@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
 /**
@@ -19,19 +19,17 @@ export function CountUp({
   className?: string;
 }) {
   const reduce = useReducedMotion();
-  const [display, setDisplay] = useState(reduce ? value : 0);
-  const startedRef = useRef(false);
+  const [display, setDisplay] = useState(value);
 
   useEffect(() => {
     if (reduce) {
       setDisplay(value);
       return;
     }
-    if (startedRef.current) return;
-    startedRef.current = true;
 
     let raf = 0;
     let start = 0;
+    setDisplay(0);
     // easeOutQuart — smooth deceleration that settles cleanly onto the value.
     const ease = (t: number) => 1 - Math.pow(1 - t, 4);
 
@@ -39,14 +37,15 @@ export function CountUp({
       if (!start) start = now;
       const t = Math.min(1, (now - start) / durationMs);
       setDisplay(value * ease(t));
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else setDisplay(value);
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setDisplay(value);
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [value, durationMs, reduce]);
 
-  return (
-    <span className={className}>{display.toFixed(decimals)}</span>
-  );
+  return <span className={className}>{display.toFixed(decimals)}</span>;
 }

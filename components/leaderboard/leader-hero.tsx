@@ -35,8 +35,8 @@ export function LeaderHero({
           />
         </div>
 
-        {/* Info */}
-        <div className="flex flex-col py-6 sm:border-l sm:border-border sm:py-7 sm:pl-8">
+        {/* Info — vertically centred so the time fills the column, not a gap. */}
+        <div className="flex flex-col justify-center py-6 sm:border-l sm:border-border sm:py-8 sm:pl-8">
           <span className="self-start bg-primary px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
             No.01 — Fastest
           </span>
@@ -49,16 +49,16 @@ export function LeaderHero({
             {car.modelYear} · {car.powertrainType}
           </p>
 
-          <div className="mt-auto pt-8">
+          <div className="mt-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
               0–100 km/h
             </p>
-            <div className="mt-1 flex items-baseline gap-2">
+            <div className="-ml-1 mt-1 flex items-baseline gap-2">
               <CountUp
                 value={car.zeroToHundred}
-                className="font-mono text-7xl font-bold leading-[0.82] tracking-tighter sm:text-8xl"
+                className="font-mono text-7xl font-bold leading-[0.78] tracking-tighter sm:text-[8.5rem]"
               />
-              <span className="font-mono text-xl text-muted-foreground">s</span>
+              <span className="font-mono text-2xl text-muted-foreground">s</span>
             </div>
             <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
               Fastest
@@ -74,7 +74,7 @@ export function LeaderHero({
             </p>
           </div>
 
-          <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+          <p className="mt-7 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
             {formatEngine(car.engineSize)} · {car.induction} · {car.transmission}{" "}
             · {car.powertrainType}
           </p>
