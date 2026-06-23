@@ -12,12 +12,15 @@ type LeanCar = {
   modelYear: number;
   manufacturer: string;
   carModel: string;
+  variant?: string;
   engineSize: number;
   powertrainType: CarDTO["powertrainType"];
   transmission: CarDTO["transmission"];
   induction: CarDTO["induction"];
   zeroToHundred: number;
   media: { type: CarDTO["media"][number]["type"]; path: string }[];
+  specs?: { label: string; value: string }[];
+  features?: string[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -29,12 +32,15 @@ function toDTO(doc: LeanCar): Omit<CarDTO, "position"> {
     modelYear: doc.modelYear,
     manufacturer: doc.manufacturer,
     carModel: doc.carModel,
+    variant: doc.variant ?? "",
     engineSize: doc.engineSize,
     powertrainType: doc.powertrainType,
     transmission: doc.transmission,
     induction: doc.induction,
     zeroToHundred: doc.zeroToHundred,
     media: (doc.media ?? []).map((m) => ({ type: m.type, path: m.path })),
+    specs: (doc.specs ?? []).map((s) => ({ label: s.label, value: s.value })),
+    features: doc.features ?? [],
     createdAt: new Date(doc.createdAt).toISOString(),
     updatedAt: new Date(doc.updatedAt).toISOString(),
   };

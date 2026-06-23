@@ -24,12 +24,15 @@ export default async function EditCarPage({
     modelYear: car.modelYear,
     manufacturer: car.manufacturer,
     carModel: car.carModel,
+    variant: car.variant,
     engineSize: car.engineSize,
     powertrainType: car.powertrainType,
     transmission: car.transmission,
     induction: car.induction,
     zeroToHundred: car.zeroToHundred,
     media: car.media,
+    specs: car.specs,
+    features: car.features,
   };
 
   return (

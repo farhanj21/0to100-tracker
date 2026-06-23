@@ -11,6 +11,7 @@ import {
   Cog,
   Zap,
   Hash,
+  Check,
 } from "lucide-react";
 import { getCarById, getCarCount } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
@@ -130,7 +131,10 @@ export default async function CarDetailPage({
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
               {car.manufacturer}{" "}
-              <span className="text-muted-foreground">{car.carModel}</span>
+              <span className="text-muted-foreground">
+                {car.carModel}
+                {car.variant ? ` ${car.variant}` : ""}
+              </span>
             </h1>
             <div className="mt-2 flex flex-wrap gap-2">
               <Badge variant="default">{car.powertrainType}</Badge>
@@ -160,6 +164,45 @@ export default async function CarDetailPage({
           ))}
         </dl>
       </div>
+
+      {/* Full specifications (extended, from auto-fill or manual entry) */}
+      {car.specs.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+            Full specifications
+          </h2>
+          <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+            {car.specs.map((s, i) => (
+              <div
+                key={`${s.label}-${i}`}
+                className="flex items-center justify-between gap-4 bg-card px-4 py-3"
+              >
+                <dt className="text-sm text-muted-foreground">{s.label}</dt>
+                <dd className="text-right text-sm font-medium">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+
+      {/* Features */}
+      {car.features.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+            Features
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {car.features.map((f, i) => (
+              <li
+                key={`${f}-${i}`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-sm"
+              >
+                <Check className="h-3.5 w-3.5 text-primary" /> {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

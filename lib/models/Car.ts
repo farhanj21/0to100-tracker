@@ -15,16 +15,26 @@ export interface IMedia {
   path: string;
 }
 
+export interface ISpec {
+  label: string;
+  value: string;
+}
+
 export interface ICar {
   modelYear: number;
   manufacturer: string;
   carModel: string;
+  variant: string;
   engineSize: number;
   powertrainType: PowertrainType;
   transmission: Transmission;
   induction: Induction;
   zeroToHundred: number;
   media: IMedia[];
+  // Extended, free-form spec sheet (label/value) + feature highlights. Optional
+  // bonus data, typically populated by the "Auto-fill from web" lookup.
+  specs: ISpec[];
+  features: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,11 +47,20 @@ const MediaSchema = new Schema<IMedia>(
   { _id: false }
 );
 
+const SpecSchema = new Schema<ISpec>(
+  {
+    label: { type: String, required: true, trim: true },
+    value: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const CarSchema = new Schema<ICar>(
   {
     modelYear: { type: Number, required: true, min: 1900, max: 2100 },
     manufacturer: { type: String, required: true, trim: true },
     carModel: { type: String, required: true, trim: true },
+    variant: { type: String, default: "", trim: true },
     engineSize: { type: Number, required: true, min: 0 },
     powertrainType: { type: String, enum: POWERTRAIN_TYPES, required: true },
     transmission: { type: String, enum: TRANSMISSIONS, required: true },
@@ -49,6 +68,8 @@ const CarSchema = new Schema<ICar>(
     // The core metric. Indexed because every leaderboard read sorts on it.
     zeroToHundred: { type: Number, required: true, min: 0, index: true },
     media: { type: [MediaSchema], default: [] },
+    specs: { type: [SpecSchema], default: [] },
+    features: { type: [String], default: [] },
   },
   { timestamps: true }
 );

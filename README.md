@@ -93,6 +93,25 @@ Generate a secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
+## Auto-fill specs (free, Gemini)
+
+On the add/edit car form, **Auto-fill from web** looks up a car's specs so you
+don't type them by hand. Enter the manufacturer, model, and year, click the
+button, and it fills **engine size, powertrain, transmission, and induction**,
+then showcases everything it found (including an approximate **0–100 reference**).
+
+- **Free, no charges.** It uses Google Gemini's free tier. Add a free key (no
+  card) from [Google AI Studio](https://aistudio.google.com/apikey) as
+  `GEMINI_API_KEY` in `.env.local` (optionally `GEMINI_MODEL`). Without a key the
+  button simply reports it isn't configured — the rest of the app is unaffected.
+- **You stay in control.** Values are approximate (AI lookup), shown for review
+  before saving. The **0–100 time is never auto-filled** — you enter it yourself,
+  since it sets the leaderboard rank.
+
+Flow: `components/car-form/car-form.tsx` → `POST /api/cars/fetch-specs`
+(auth-gated) → `lib/specs.ts` (zod-validated) → `lib/gemini.ts` (REST via
+`fetch`, no SDK).
+
 ## Media storage (Cloudinary)
 
 Uploads flow through the `/api/upload` route handler, which calls

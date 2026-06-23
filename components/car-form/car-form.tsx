@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Save, Gauge } from "lucide-react";
+import { Loader2, Save, Gauge, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MediaUploader } from "@/components/car-form/media-uploader";
+import { ExtraSpecsEditor } from "@/components/car-form/extra-specs-editor";
 import { carInputSchema, type CarInput } from "@/lib/validation";
 import {
   POWERTRAIN_TYPES,
@@ -23,6 +25,7 @@ import {
   INDUCTIONS,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import type { CarSpecsResult, SpecPair } from "@/lib/types";
 
 interface CarFormProps {
   mode: "create" | "edit";
@@ -34,12 +37,15 @@ const BLANK: CarInput = {
   modelYear: new Date().getFullYear(),
   manufacturer: "",
   carModel: "",
+  variant: "",
   engineSize: 2,
   powertrainType: "Petrol",
   transmission: "Auto",
   induction: "Turbocharged",
   zeroToHundred: 5,
   media: [],
+  specs: [],
+  features: [],
 };
 
 export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
@@ -58,6 +64,91 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
   });
 
   const media = watch("media");
+  const specsValue = watch("specs");
+  const featuresValue = watch("features");
+  const manufacturerValue = watch("manufacturer");
+  const carModelValue = watch("carModel");
+  const canAutoFill = Boolean(
+    manufacturerValue?.toString().trim() && carModelValue?.toString().trim()
+  );
+
+  const [fetchingSpecs, setFetchingSpecs] = useState(false);
+  const [foundSpecs, setFoundSpecs] = useState<CarSpecsResult | null>(null);
+
+  // Look up specs from the free Gemini tier and pre-fill the form. The 0–100
+  // time is intentionally NOT written — it's shown in the showcase as reference.
+  async function autoFillFromWeb() {
+    const manufacturer = manufacturerValue?.toString().trim();
+    const carModel = carModelValue?.toString().trim();
+    if (!manufacturer || !carModel) {
+      toast.error("Enter manufacturer and model first.");
+      return;
+    }
+
+    setFetchingSpecs(true);
+    try {
+      const res = await fetch("/api/cars/fetch-specs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          manufacturer,
+          carModel,
+          variant: watch("variant")?.toString().trim() || undefined,
+          modelYear: watch("modelYear"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Lookup failed.");
+
+      const specs = data.specs as CarSpecsResult;
+      const opts = { shouldValidate: true, shouldDirty: true } as const;
+      const filled: string[] = [];
+
+      if (specs.engineSize != null) {
+        setValue("engineSize", specs.engineSize, opts);
+        filled.push("engine");
+      }
+      if (specs.powertrainType) {
+        setValue("powertrainType", specs.powertrainType, opts);
+        filled.push("powertrain");
+      }
+      if (specs.transmission) {
+        setValue("transmission", specs.transmission, opts);
+        filled.push("transmission");
+      }
+      if (specs.induction) {
+        setValue("induction", specs.induction, opts);
+        filled.push("induction");
+      }
+      if (specs.modelYear != null) {
+        setValue("modelYear", specs.modelYear, opts);
+      }
+
+      // Extended specs + features (replace existing when the lookup returns any).
+      if (specs.specs.length > 0) {
+        setValue("specs", specs.specs, opts);
+      }
+      if (specs.features.length > 0) {
+        setValue("features", specs.features, opts);
+      }
+
+      setFoundSpecs(specs);
+      const extra = specs.specs.length + specs.features.length;
+      if (filled.length || extra) {
+        toast.success(
+          `Filled ${filled.join(", ") || "details"}${
+            extra ? ` + ${extra} extra items` : ""
+          }. Add the 0–100 time to finish.`
+        );
+      } else {
+        toast.message("No specs found — enter them manually.");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Lookup failed.");
+    } finally {
+      setFetchingSpecs(false);
+    }
+  }
 
   async function onSubmit(values: CarInput) {
     const url = mode === "create" ? "/api/cars" : `/api/cars/${carId}`;
@@ -95,7 +186,14 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             <Input placeholder="e.g. Porsche" {...register("manufacturer")} />
           </Field>
           <Field label="Model" error={errors.carModel?.message}>
-            <Input placeholder="e.g. 911 Turbo S" {...register("carModel")} />
+            <Input placeholder="e.g. 911" {...register("carModel")} />
+          </Field>
+          <Field
+            label="Variant / trim"
+            error={errors.variant?.message}
+            hint="Optional — sharpens the web lookup (e.g. Turbo S, GLI, Altis Grande)."
+          >
+            <Input placeholder="e.g. Turbo S" {...register("variant")} />
           </Field>
           <Field label="Model year" error={errors.modelYear?.message}>
             <Input
@@ -112,6 +210,32 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
               {...register("engineSize")}
             />
           </Field>
+        </div>
+
+        {/* Free auto-fill from the web (Google Gemini) */}
+        <div className="mt-5 border-t border-border pt-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              Fills engine, powertrain, transmission &amp; induction from a free
+              web lookup. Review before saving.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={autoFillFromWeb}
+              disabled={fetchingSpecs || !canAutoFill}
+              className="shrink-0"
+            >
+              {fetchingSpecs ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              Auto-fill from web
+            </Button>
+          </div>
+          {foundSpecs && <SpecShowcase specs={foundSpecs} />}
         </div>
       </Section>
 
@@ -165,6 +289,23 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
         </Field>
       </Section>
 
+      {/* Extra specs & features */}
+      <Section
+        title="Extra specs & features"
+        subtitle="Full spec sheet shown on the car page — auto-filled and fully editable."
+      >
+        <ExtraSpecsEditor
+          specs={specsValue}
+          features={featuresValue}
+          onSpecsChange={(next) =>
+            setValue("specs", next, { shouldDirty: true, shouldValidate: true })
+          }
+          onFeaturesChange={(next) =>
+            setValue("features", next, { shouldDirty: true, shouldValidate: true })
+          }
+        />
+      </Section>
+
       {/* Media */}
       <Section title="Media" subtitle="Images and videos for the gallery">
         <MediaUploader
@@ -198,6 +339,53 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
 }
 
 /* ---------- small presentational helpers ---------- */
+
+function SpecShowcase({ specs }: { specs: CarSpecsResult }) {
+  const extraCount = specs.specs.length;
+  const featureCount = specs.features.length;
+
+  return (
+    <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+      <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> Auto-filled — review before saving
+      </div>
+
+      <p className="mt-2 text-muted-foreground">
+        Filled the core fields
+        {extraCount
+          ? `, plus ${extraCount} extra spec${extraCount > 1 ? "s" : ""}`
+          : ""}
+        {featureCount
+          ? ` and ${featureCount} feature${featureCount > 1 ? "s" : ""}`
+          : ""}
+        {extraCount || featureCount ? " (in the section below)" : ""}.
+      </p>
+
+      {specs.zeroToHundredHint != null && (
+        <p className="mt-1 text-muted-foreground">
+          0–100 reference:{" "}
+          <span className="font-mono font-medium text-foreground">
+            {specs.zeroToHundredHint.toFixed(1)} s
+          </span>{" "}
+          — enter the official figure in the Performance field.
+        </p>
+      )}
+
+      {(specs.notes || specs.sourceSummary) && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {specs.notes && <span>{specs.notes} </span>}
+          {specs.sourceSummary && (
+            <span className="italic">({specs.sourceSummary})</span>
+          )}
+        </p>
+      )}
+
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Values are approximate (free AI lookup) — double-check before saving.
+      </p>
+    </div>
+  );
+}
 
 function Section({
   title,
