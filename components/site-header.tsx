@@ -11,13 +11,18 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="group flex items-center gap-2.5" aria-label="0–100 home">
-          <span
-            className="h-5 w-[3px] rounded-full bg-primary transition-transform group-hover:scale-y-110"
-            aria-hidden
-          />
-          <span className="font-display text-2xl tracking-tight">0–100</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="group flex items-center gap-2.5" aria-label="0–100 home">
+            <span
+              className="h-5 w-[3px] rounded-full bg-primary transition-transform group-hover:scale-y-110"
+              aria-hidden
+            />
+            <span className="font-display text-2xl tracking-tight">0–100</span>
+          </Link>
+          <span className="hidden border-l border-border pl-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:inline">
+            Acceleration leaderboard
+          </span>
+        </div>
 
         <div className="flex items-center gap-1">
           <ThemeToggle />

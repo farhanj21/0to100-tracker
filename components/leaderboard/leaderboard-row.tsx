@@ -10,30 +10,20 @@ import type { CarDTO } from "@/lib/types";
 export function LeaderboardRow({
   car,
   gap,
-  index = 0,
 }: {
   car: CarDTO;
   /** Seconds behind the global leader. */
   gap: number;
-  index?: number;
 }) {
   const reduce = useReducedMotion();
   return (
     <motion.div
       layout={!reduce}
-      layoutId={car.id}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
       transition={
-        reduce
-          ? { duration: 0.2 }
-          : {
-              type: "spring",
-              stiffness: 320,
-              damping: 30,
-              delay: Math.min(index * 0.035, 0.45),
-            }
+        reduce ? { duration: 0.15 } : { type: "spring", stiffness: 400, damping: 34 }
       }
     >
       <Link

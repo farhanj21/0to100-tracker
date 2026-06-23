@@ -52,29 +52,40 @@ export default function RootLayout({
         <div className="grain" aria-hidden />
         <SiteHeader />
         <main className="container py-8">{children}</main>
-        <footer className="border-t border-border/60 py-6 mt-10">
-          <div className="container flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-display text-sm">0–100</span>
-            <span className="flex items-center gap-1.5">
-              Built by
-              <a
-                href="https://github.com/farhanj21"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-foreground/80 transition-colors hover:text-primary"
-              >
-                Kensu
-              </a>
-              <span className="text-muted-foreground/50">&</span>
-              <a
-                href="https://github.com/vroslmend"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-foreground/80 transition-colors hover:text-primary"
-              >
-                Vroslmend
-              </a>
-            </span>
+        <footer className="mt-16 border-t border-border/60">
+          <div className="container flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+            {/* Editorial sign-off */}
+            <p className="font-display text-2xl tracking-tight sm:text-3xl">
+              Quickest <span className="italic">first</span>
+              <span className="text-primary">.</span>
+            </p>
+
+            {/* Credits + colophon */}
+            <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:items-end">
+              <span className="flex items-center gap-1.5">
+                Built by
+                <a
+                  href="https://github.com/farhanj21"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground/80 transition-colors hover:text-primary"
+                >
+                  Kensu
+                </a>
+                <span className="text-muted-foreground/50">&</span>
+                <a
+                  href="https://github.com/vroslmend"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground/80 transition-colors hover:text-primary"
+                >
+                  Vroslmend
+                </a>
+              </span>
+              <span className="font-mono uppercase tracking-[0.16em] text-muted-foreground/60">
+                0–100 · Acceleration board · {new Date().getFullYear()}
+              </span>
+            </div>
           </div>
         </footer>
         <Toaster />

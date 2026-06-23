@@ -92,12 +92,11 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
         ) : (
           <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
-              {boardCars.map((car, i) => (
+              {boardCars.map((car) => (
                 <LeaderboardRow
                   key={car.id}
                   car={car}
                   gap={car.zeroToHundred - leaderTime}
-                  index={i}
                 />
               ))}
             </AnimatePresence>
