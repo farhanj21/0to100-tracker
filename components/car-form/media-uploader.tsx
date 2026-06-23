@@ -2,7 +2,14 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { UploadCloud, X, Loader2, Image as ImageIcon, Film } from "lucide-react";
+import {
+  UploadCloud,
+  X,
+  Loader2,
+  Image as ImageIcon,
+  Film,
+  Crop as CropIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageCropDialog } from "@/components/car-form/image-crop-dialog";
 import { cn } from "@/lib/utils";
@@ -13,13 +20,23 @@ interface MediaUploaderProps {
   onChange: (media: MediaDTO[]) => void;
 }
 
+/** Fetch an already-uploaded image URL back into a local File so it can be
+ *  re-cropped on a same-origin canvas (avoids cross-origin canvas tainting). */
+async function urlToFile(url: string): Promise<File> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Could not load image");
+  const blob = await res.blob();
+  const name = url.split("/").pop()?.split("?")[0] || "image";
+  return new File([blob], name, { type: blob.type || "image/jpeg" });
+}
+
 /**
  * Multi-file image/video uploader.
  *
- * Videos upload to /api/upload immediately. Images are first routed through a
- * crop dialog (one at a time) so the admin can frame them before upload — the
- * cropped result is what gets sent to Cloudinary. Previews render from the saved
- * URLs.
+ * Videos upload immediately. Images are routed through a crop dialog before
+ * upload, and any already-uploaded image can be re-cropped via its "Crop"
+ * button (it's re-uploaded and replaces the original; the stale asset is cleaned
+ * up when the car is saved). Previews render from the saved URLs.
  */
 export function MediaUploader({ value, onChange }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,26 +47,51 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
   const [cropQueue, setCropQueue] = useState<File[]>([]);
   const [cropIndex, setCropIndex] = useState(0);
   const resolvedRef = useRef<File[]>([]);
+  // When set, the crop result replaces value[recropIndex] instead of appending.
+  const [recropIndex, setRecropIndex] = useState<number | null>(null);
 
-  async function uploadFiles(files: File[]) {
-    if (files.length === 0) return;
+  /** Upload files to Cloudinary; returns the saved descriptors or null on error. */
+  async function uploadRaw(files: File[]): Promise<MediaDTO[] | null> {
+    if (files.length === 0) return null;
     setUploading(true);
     try {
       const form = new FormData();
       files.forEach((f) => form.append("files", f));
-
       const res = await fetch("/api/upload", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Upload failed");
-
-      onChange([...value, ...(data.media as MediaDTO[])]);
-      toast.success(
-        `${data.media.length} file${data.media.length > 1 ? "s" : ""} uploaded`
-      );
+      return data.media as MediaDTO[];
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
+      return null;
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function uploadAndAppend(files: File[]) {
+    const media = await uploadRaw(files);
+    if (!media) return;
+    onChange([...value, ...media]);
+    toast.success(
+      `${media.length} file${media.length > 1 ? "s" : ""} uploaded`
+    );
+  }
+
+  /** Finalize a completed crop batch — either replace one item or append. */
+  async function finishBatch(files: File[], replaceIndex: number | null) {
+    const media = await uploadRaw(files);
+    if (!media) return;
+    if (replaceIndex !== null) {
+      const next = [...value];
+      if (next[replaceIndex]) next[replaceIndex] = media[0];
+      onChange(next);
+      toast.success("Image re-cropped");
+    } else {
+      onChange([...value, ...media]);
+      toast.success(
+        `${media.length} file${media.length > 1 ? "s" : ""} uploaded`
+      );
     }
   }
 
@@ -61,14 +103,25 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
     const images = files.filter((f) => f.type.startsWith("image/"));
     const others = files.filter((f) => !f.type.startsWith("image/"));
 
-    // Videos / other media upload right away.
-    if (others.length) void uploadFiles(others);
+    if (others.length) void uploadAndAppend(others);
 
-    // Images go through the crop dialog first.
     if (images.length) {
       resolvedRef.current = [];
+      setRecropIndex(null);
       setCropIndex(0);
       setCropQueue(images);
+    }
+  }
+
+  async function startRecrop(i: number) {
+    try {
+      const file = await urlToFile(value[i].path);
+      resolvedRef.current = [];
+      setRecropIndex(i);
+      setCropIndex(0);
+      setCropQueue([file]);
+    } catch {
+      toast.error("Could not load image for cropping");
     }
   }
 
@@ -79,18 +132,20 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
       setCropIndex(nextIndex);
     } else {
       const batch = resolvedRef.current;
+      const replaceIndex = recropIndex;
       resolvedRef.current = [];
       setCropQueue([]);
       setCropIndex(0);
-      void uploadFiles(batch);
+      setRecropIndex(null);
+      void finishBatch(batch, replaceIndex);
     }
   }
 
   function handleCropCancel() {
-    // Abort the whole pending selection — nothing from it gets uploaded.
     resolvedRef.current = [];
     setCropQueue([]);
     setCropIndex(0);
+    setRecropIndex(null);
   }
 
   function removeAt(index: number) {
@@ -176,6 +231,21 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
                   <Film className="inline h-3 w-3" />
                 )}
               </span>
+
+              {/* Re-crop (images only) */}
+              {m.type === "image" && (
+                <button
+                  type="button"
+                  onClick={() => startRecrop(i)}
+                  disabled={uploading}
+                  className="absolute bottom-1 right-1 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity hover:bg-primary disabled:opacity-50 group-hover:opacity-100"
+                  aria-label="Crop image"
+                  title="Crop image"
+                >
+                  <CropIcon className="h-3 w-3" /> Crop
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => removeAt(i)}
@@ -211,6 +281,8 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
         file={cropQueue[cropIndex] ?? null}
         index={cropIndex}
         total={cropQueue.length}
+        allowUseOriginal={recropIndex === null}
+        confirmLabel={recropIndex !== null ? "Crop & replace" : undefined}
         onResolve={handleCropResolve}
         onCancel={handleCropCancel}
       />

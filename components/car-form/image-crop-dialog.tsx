@@ -6,6 +6,7 @@ import ReactCrop, {
   makeAspectCrop,
   type Crop,
   type PixelCrop,
+  type PercentCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Crop as CropIcon, Check, X } from "lucide-react";
@@ -29,10 +30,14 @@ const ASPECTS: { label: string; value: number | undefined }[] = [
   { label: "1:1", value: 1 },
 ];
 
-function centeredCrop(width: number, height: number, aspect?: number): Crop {
-  const base = aspect
+function centeredCrop(
+  width: number,
+  height: number,
+  aspect?: number
+): PercentCrop {
+  const base: PercentCrop = aspect
     ? makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height)
-    : ({ unit: "%", x: 5, y: 5, width: 90, height: 90 } as Crop);
+    : { unit: "%", x: 5, y: 5, width: 90, height: 90 };
   return centerCrop(base, width, height);
 }
 
@@ -104,6 +109,10 @@ interface ImageCropDialogProps {
   total: number;
   onResolve: (file: File) => void;
   onCancel: () => void;
+  /** Show the "Use original" skip button (off for re-cropping existing media). */
+  allowUseOriginal?: boolean;
+  /** Override the confirm button label. */
+  confirmLabel?: string;
 }
 
 export function ImageCropDialog({
@@ -112,6 +121,8 @@ export function ImageCropDialog({
   total,
   onResolve,
   onCancel,
+  allowUseOriginal = true,
+  confirmLabel,
 }: ImageCropDialogProps) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [src, setSrc] = useState<string | null>(null);
@@ -244,17 +255,22 @@ export function ImageCropDialog({
             <X className="h-4 w-4" /> Cancel
           </Button>
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => file && onResolve(file)}
-              disabled={busy}
-            >
-              Use original
-            </Button>
+            {allowUseOriginal && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => file && onResolve(file)}
+                disabled={busy}
+              >
+                Use original
+              </Button>
+            )}
             <Button type="button" onClick={confirmCrop} disabled={busy}>
               <Check className="h-4 w-4" />
-              {total > 1 && index + 1 < total ? "Crop & next" : "Crop & upload"}
+              {confirmLabel ??
+                (total > 1 && index + 1 < total
+                  ? "Crop & next"
+                  : "Crop & upload")}
             </Button>
           </div>
         </DialogFooter>

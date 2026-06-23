@@ -89,6 +89,10 @@ export async function deleteMedia(media: SavedMedia): Promise<void> {
   const publicId = publicIdFromUrl(media.path);
   if (!publicId) return; // not a Cloudinary URL we manage
 
+  // Safety: only ever delete assets inside our own folder. This prevents any
+  // accidental removal of media belonging to other projects in a shared account.
+  if (!publicId.startsWith(`${CLOUDINARY_FOLDER}/`)) return;
+
   try {
     await getCloudinary().uploader.destroy(publicId, {
       resource_type: media.type,
