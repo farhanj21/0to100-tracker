@@ -1,74 +1,64 @@
 import "server-only";
-import { promises as fs } from "fs";
-import path from "path";
-import { randomUUID } from "crypto";
+import type { UploadApiResponse } from "cloudinary";
+import { getCloudinary, CLOUDINARY_FOLDER } from "@/lib/cloudinary";
 
 /**
- * Storage abstraction for uploaded media.
+ * Storage abstraction for uploaded media — backed by Cloudinary.
  *
- * The rest of the app only talks to `saveFile` / `deleteFile`, which return and
- * accept public URL paths (e.g. "/uploads/abc.jpg"). To migrate to S3 or
- * Cloudinary later, swap the body of these two functions to upload/delete via
- * the provider SDK and return the provider URL — no callers need to change.
+ * The rest of the app only talks to `saveFile`/`saveFiles` (which return
+ * `{ type, path }` where `path` is the Cloudinary secure URL) and
+ * `deleteMedia`/`deleteManyMedia`. To migrate to another provider (S3, local
+ * disk, …) swap the bodies here and keep the same signatures — no callers
+ * change. We pass the full media descriptor to delete so the provider knows the
+ * resource type (Cloudinary needs it to destroy videos vs images).
  */
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-const PUBLIC_PREFIX = "/uploads";
-
-const IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-]);
-const VIDEO_TYPES = new Set([
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "video/ogg",
-]);
 
 export type SavedMedia = { type: "image" | "video"; path: string };
 
-function extFor(file: File): string {
-  const fromName = path.extname(file.name);
-  if (fromName) return fromName.toLowerCase();
-  // Fallback to a sensible extension from the MIME type.
-  const map: Record<string, string> = {
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-    "image/gif": ".gif",
-    "image/avif": ".avif",
-    "video/mp4": ".mp4",
-    "video/webm": ".webm",
-    "video/quicktime": ".mov",
-    "video/ogg": ".ogv",
-  };
-  return map[file.type] ?? "";
+/** Upload a Buffer to Cloudinary via a stream and resolve the API response. */
+function uploadBuffer(
+  buffer: Buffer,
+  filename: string
+): Promise<UploadApiResponse> {
+  const cloudinary = getCloudinary();
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: CLOUDINARY_FOLDER,
+        resource_type: "auto", // let Cloudinary detect image vs video
+        // Keep a readable prefix in the public_id while staying unique.
+        use_filename: true,
+        unique_filename: true,
+        filename_override: filename,
+      },
+      (error, result) => {
+        if (error || !result) {
+          reject(error ?? new Error("Cloudinary upload failed"));
+          return;
+        }
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
 }
 
-function classify(file: File): "image" | "video" | null {
-  if (IMAGE_TYPES.has(file.type)) return "image";
-  if (VIDEO_TYPES.has(file.type)) return "video";
-  return null;
-}
-
-/** Persist a single uploaded File and return its public path + media type. */
+/** Persist a single uploaded File to Cloudinary and return its descriptor. */
 export async function saveFile(file: File): Promise<SavedMedia> {
-  const kind = classify(file);
-  if (!kind) {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await uploadBuffer(buffer, file.name || "upload");
+
+  if (result.resource_type !== "image" && result.resource_type !== "video") {
+    // Clean up the stray asset and reject unsupported types (e.g. raw/pdf).
+    await getCloudinary()
+      .uploader.destroy(result.public_id, {
+        resource_type: result.resource_type,
+      })
+      .catch(() => {});
     throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
   }
 
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-
-  const filename = `${randomUUID()}${extFor(file)}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(UPLOAD_DIR, filename), buffer);
-
-  return { type: kind, path: `${PUBLIC_PREFIX}/${filename}` };
+  return { type: result.resource_type, path: result.secure_url };
 }
 
 /** Save many files, preserving order. */
@@ -77,23 +67,39 @@ export async function saveFiles(files: File[]): Promise<SavedMedia[]> {
 }
 
 /**
- * Delete a stored media file by its public path. Best-effort: a missing file
- * is not treated as an error (it may have already been removed).
+ * Recover a Cloudinary public_id (including folder) from a secure URL.
+ * e.g. https://res.cloudinary.com/<c>/image/upload/v123/0to100-tracker/x.jpg
+ *   ->  0to100-tracker/x
  */
-export async function deleteFile(publicPath: string): Promise<void> {
-  if (!publicPath.startsWith(PUBLIC_PREFIX)) return;
-  const filename = path.basename(publicPath);
-  const absolute = path.join(UPLOAD_DIR, filename);
+function publicIdFromUrl(url: string): string | null {
+  const marker = "/upload/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  let rest = url.slice(idx + marker.length);
+  rest = rest.replace(/^v\d+\//, ""); // strip version segment
+  rest = rest.replace(/\.[^/.]+$/, ""); // strip extension
+  return rest || null;
+}
+
+/**
+ * Delete a stored media asset. Best-effort: a missing asset is not an error
+ * (it may have already been removed).
+ */
+export async function deleteMedia(media: SavedMedia): Promise<void> {
+  const publicId = publicIdFromUrl(media.path);
+  if (!publicId) return; // not a Cloudinary URL we manage
+
   try {
-    await fs.unlink(absolute);
-  } catch (err: unknown) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      // Log but don't throw — deleting a car shouldn't fail over orphaned media.
-      console.error(`Failed to delete media ${publicPath}:`, err);
-    }
+    await getCloudinary().uploader.destroy(publicId, {
+      resource_type: media.type,
+      invalidate: true,
+    });
+  } catch (err) {
+    // Log but don't throw — deleting a car shouldn't fail over orphaned media.
+    console.error(`Failed to delete media ${media.path}:`, err);
   }
 }
 
-export async function deleteFiles(publicPaths: string[]): Promise<void> {
-  await Promise.all(publicPaths.map((p) => deleteFile(p)));
+export async function deleteManyMedia(media: SavedMedia[]): Promise<void> {
+  await Promise.all(media.map((m) => deleteMedia(m)));
 }

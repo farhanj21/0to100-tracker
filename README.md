@@ -14,7 +14,7 @@ ascending by `zeroToHundred` on read.
 - **Framer Motion** — layout animations for smooth row re-ordering
 - **MongoDB** + **Mongoose** (cached global connection for dev hot-reloads)
 - **zod** + **react-hook-form** — typed, validated forms
-- Local file storage under `public/uploads` (swap-ready for S3/Cloudinary)
+- **Cloudinary** — image/video storage (signed server-side uploads)
 
 ## Quick start
 
@@ -26,7 +26,9 @@ npm run dev                     # http://localhost:3000
 ```
 
 Set `MONGODB_URI` in `.env.local` to a local MongoDB (`mongodb://127.0.0.1:27017/zero-to-hundred`)
-or an Atlas connection string.
+or an Atlas connection string, and add your **Cloudinary** credentials
+(`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) from the
+[Cloudinary dashboard](https://cloudinary.com/console) so media uploads work.
 
 ## Scripts
 
@@ -69,8 +71,12 @@ A `Car` has: `modelYear`, `manufacturer`, `carModel`, `engineSize` (L),
 `zeroToHundred` (seconds), and `media[]` of `{ type: 'image' | 'video', path }`.
 Timestamps are enabled. `position` is computed on read, never persisted.
 
-## Swapping storage for S3/Cloudinary
+## Media storage (Cloudinary)
 
-All media I/O goes through `lib/storage.ts` (`saveFile` / `deleteFile`), which
-deal only in public URL paths. Replace their bodies with provider SDK calls and
-return the provider URL — no callers change.
+Uploads flow through the `/api/upload` route handler, which calls
+`lib/storage.ts`. There, `saveFiles` streams each file to Cloudinary (signed,
+server-side — your API secret never reaches the browser) and returns
+`{ type, path }` where `path` is the Cloudinary secure URL stored on the car.
+`deleteManyMedia` removes assets when a car is deleted or its media is dropped
+during an edit. To swap providers (S3, local disk, …) replace the bodies in
+`lib/storage.ts` and keep the signatures — no callers change.

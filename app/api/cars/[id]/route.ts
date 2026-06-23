@@ -4,7 +4,7 @@ import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
 import { getCarById } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
-import { deleteFiles } from "@/lib/storage";
+import { deleteManyMedia } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -54,15 +54,15 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     const keptPaths = new Set(parsed.data.media.map((m) => m.path));
-    const removedPaths = existing.media
-      .map((m) => m.path)
-      .filter((p) => !keptPaths.has(p));
+    const removedMedia = existing.media
+      .filter((m) => !keptPaths.has(m.path))
+      .map((m) => ({ type: m.type, path: m.path }));
 
     existing.set(parsed.data);
     await existing.save();
 
-    if (removedPaths.length) {
-      await deleteFiles(removedPaths);
+    if (removedMedia.length) {
+      await deleteManyMedia(removedMedia);
     }
 
     return NextResponse.json({ id: String(existing._id) });
@@ -84,7 +84,9 @@ export async function DELETE(_request: Request, { params }: Params) {
       return NextResponse.json({ error: "Car not found" }, { status: 404 });
     }
 
-    await deleteFiles(deleted.media.map((m) => m.path));
+    await deleteManyMedia(
+      deleted.media.map((m) => ({ type: m.type, path: m.path }))
+    );
 
     return NextResponse.json({ ok: true });
   } catch (err) {
