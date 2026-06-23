@@ -35,8 +35,8 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const car = await getCarById(params.id);
-  if (!car) return { title: "Car not found · 0–100 Tracker" };
-  return { title: `${carTitle(car)} · 0–100 Tracker` };
+  if (!car) return { title: "Car not found · 0–100" };
+  return { title: `${carTitle(car)} · 0–100` };
 }
 
 export default async function CarDetailPage({

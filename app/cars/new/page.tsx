@@ -5,7 +5,7 @@ import { CarForm } from "@/components/car-form/car-form";
 import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Add a car · 0–100 Tracker" };
+export const metadata = { title: "Add a car · 0–100" };
 
 export default function NewCarPage() {
   if (!isAuthenticated()) redirect("/login?next=/cars/new");
