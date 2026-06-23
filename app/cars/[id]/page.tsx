@@ -114,7 +114,6 @@ export default async function CarDetailPage({
                 {car.position === 1 ? (
                   marginToNext > 0.0001 ? (
                     <>
-                      Fastest —{" "}
                       <span className="font-bold text-primary">
                         {marginToNext.toFixed(2)} s
                       </span>{" "}
