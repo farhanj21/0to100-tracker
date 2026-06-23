@@ -24,9 +24,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "0–100 Tracker — Acceleration Leaderboard",
+  title: "0–100 Tracker",
   description:
-    "A live leaderboard ranking cars by their 0–100 km/h acceleration time, fastest to slowest.",
+    "A live ranking of cars by their 0–100 km/h time, quickest first.",
 };
 
 export default function RootLayout({
@@ -51,7 +51,7 @@ export default function RootLayout({
         <main className="container py-8">{children}</main>
         <footer className="border-t border-border/60 py-6 mt-10">
           <div className="container text-xs text-muted-foreground flex items-center justify-between">
-            <span>0–100 Tracker</span>
+            <span className="font-display">0–100 Tracker</span>
             <span className="tabular-nums">Developed by Kensu</span>
           </div>
         </footer>
