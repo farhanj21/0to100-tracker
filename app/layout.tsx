@@ -53,9 +53,28 @@ export default function RootLayout({
         <SiteHeader />
         <main className="container py-8">{children}</main>
         <footer className="border-t border-border/60 py-6 mt-10">
-          <div className="container text-xs text-muted-foreground flex items-center justify-between">
-            <span className="font-display">0–100</span>
-            <span className="tabular-nums">Developed by Kensu</span>
+          <div className="container flex items-center justify-between text-xs text-muted-foreground">
+            <span className="font-display text-sm">0–100</span>
+            <span className="flex items-center gap-1.5">
+              Built by
+              <a
+                href="https://github.com/farhanj21"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                Kensu
+              </a>
+              <span className="text-muted-foreground/50">&</span>
+              <a
+                href="https://github.com/vroslmend"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                Vroslmend
+              </a>
+            </span>
           </div>
         </footer>
         <Toaster />
