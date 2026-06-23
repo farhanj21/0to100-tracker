@@ -56,7 +56,7 @@ export function Filters({
     JSON.stringify(value) !== JSON.stringify(EMPTY_FILTERS);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3 backdrop-blur sm:p-4">
+    <div className="border border-border bg-card p-3 sm:p-4">
       <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:items-end lg:gap-4">
         {/* Search */}
         <div className="col-span-2 lg:flex-1 lg:min-w-[180px]">

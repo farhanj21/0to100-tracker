@@ -102,7 +102,7 @@ function ViewToggle({
     { value: "table", label: "Table", icon: Table2 },
   ];
   return (
-    <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+    <div className="inline-flex border border-border bg-card p-0.5">
       {options.map((opt) => {
         const active = view === opt.value;
         return (
