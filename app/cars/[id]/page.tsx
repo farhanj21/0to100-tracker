@@ -93,14 +93,14 @@ export default async function CarDetailPage({
           <div className="border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <RankBadge position={car.position} size="lg" />
-              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 Rank {ordinal(car.position)}{" "}
                 <span className="text-muted-foreground/60">of {total}</span>
               </p>
             </div>
 
             <div className="mt-5 border-t border-border pt-5">
-              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 0–100 km/h
               </p>
               <div className="mt-1 flex items-baseline gap-2">
@@ -154,17 +154,15 @@ export default async function CarDetailPage({
 
       {/* Spec sheet */}
       <div>
-        <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Spec sheet
-        </h2>
+        <SectionHeading>Spec sheet</SectionHeading>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {specs.map((spec) => (
             <div
               key={spec.label}
               className="border border-border bg-card p-4"
             >
-              <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <spec.icon className="h-3.5 w-3.5" /> {spec.label}
+              <dt className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                <spec.icon className="h-3 w-3" /> {spec.label}
               </dt>
               <dd className="mt-1 font-medium">{spec.value}</dd>
             </div>
@@ -175,9 +173,7 @@ export default async function CarDetailPage({
       {/* Full specifications (extended, from auto-fill or manual entry) */}
       {car.specs.length > 0 && (
         <div>
-          <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Full specifications
-          </h2>
+          <SectionHeading>Full specifications</SectionHeading>
           <dl className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
             {car.specs.map((s, i) => (
               <div
@@ -195,9 +191,7 @@ export default async function CarDetailPage({
       {/* Features */}
       {car.features.length > 0 && (
         <div>
-          <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Features
-          </h2>
+          <SectionHeading>Features</SectionHeading>
           <ul className="flex flex-wrap gap-2">
             {car.features.map((f, i) => (
               <li
@@ -211,5 +205,16 @@ export default async function CarDetailPage({
         </div>
       )}
     </div>
+  );
+}
+
+/** Editorial section label: mono caps on a hairline rule, led by a solid
+ *  signal-orange tick (the recurring block motif). */
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-4 flex items-center gap-2 border-b border-border pb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground">
+      <span aria-hidden className="h-3 w-1.5 bg-primary" />
+      {children}
+    </h2>
   );
 }

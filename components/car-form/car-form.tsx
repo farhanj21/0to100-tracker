@@ -399,11 +399,12 @@ function Section({
   return (
     <section className="border border-border bg-card p-5 sm:p-6">
       <div className="mb-4">
-        <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground">
+          <span aria-hidden className="h-3 w-1.5 bg-primary" />
           {title}
         </h2>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
         )}
       </div>
       {children}
