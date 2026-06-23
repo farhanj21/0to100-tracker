@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageCropDialog } from "@/components/car-form/image-crop-dialog";
-import { cn } from "@/lib/utils";
+import { cn, cloudinaryThumb } from "@/lib/utils";
 import { extractYouTubeId, youTubeThumb } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
@@ -261,7 +261,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
               {m.type === "image" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={m.path}
+                  src={cloudinaryThumb(m.path, 200, 200, "fill")}
                   alt="upload preview"
                   className="h-full w-full object-cover"
                 />

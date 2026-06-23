@@ -46,7 +46,10 @@ export function LoginForm() {
     <div className="mx-auto max-w-sm">
       <div className="border border-border bg-card p-6 sm:p-8">
         <div className="mb-6 text-center">
-          <h1 className="font-display text-3xl tracking-tight">Admin access</h1>
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Restricted · 0–100
+          </p>
+          <h1 className="mt-1.5 font-display text-3xl tracking-tight">Admin access</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the passcode to add, edit, or delete cars.
           </p>

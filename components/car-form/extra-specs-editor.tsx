@@ -44,7 +44,7 @@ export function ExtraSpecsEditor({
       {/* Specs */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             Specifications
           </p>
           {hasAny && (
@@ -112,7 +112,9 @@ export function ExtraSpecsEditor({
 
       {/* Features */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">Features</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Features
+        </p>
         {features.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {features.map((f, i) => (

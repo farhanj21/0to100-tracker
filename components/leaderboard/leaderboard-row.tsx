@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronRight, Gauge, Wind, Cog, Fuel } from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
 import { formatTime, formatEngine, formatGap } from "@/lib/utils";
@@ -17,19 +17,24 @@ export function LeaderboardRow({
   gap: number;
   index?: number;
 }) {
+  const reduce = useReducedMotion();
   return (
     <motion.div
-      layout
+      layout={!reduce}
       layoutId={car.id}
-      initial={{ opacity: 0, y: 10 }}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      transition={{
-        type: "spring",
-        stiffness: 320,
-        damping: 30,
-        delay: Math.min(index * 0.035, 0.45),
-      }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+      transition={
+        reduce
+          ? { duration: 0.2 }
+          : {
+              type: "spring",
+              stiffness: 320,
+              damping: 30,
+              delay: Math.min(index * 0.035, 0.45),
+            }
+      }
     >
       <Link
         href={`/cars/${car.id}`}

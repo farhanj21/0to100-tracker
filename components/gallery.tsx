@@ -158,7 +158,7 @@ export function Gallery({
           >
             <button
               onClick={close}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20"
               aria-label="Close"
             >
               <X className="h-5 w-5" />
@@ -171,14 +171,14 @@ export function Gallery({
                 onClick={(e) => e.stopPropagation()}
               >
                 {active === 0 ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                    <Star className="h-3.5 w-3.5 fill-current" /> Current thumbnail
+                  <span className="inline-flex items-center gap-1.5 rounded-sm bg-primary px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+                    <Star className="h-3 w-3 fill-current" /> Current thumbnail
                   </span>
                 ) : (
                   <button
                     onClick={() => setAsThumbnail(media[active].path)}
                     disabled={pending !== null}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
                   >
                     {pending === media[active].path ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -234,7 +234,7 @@ export function Gallery({
               )}
             </motion.div>
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs text-white tabular-nums">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-sm bg-white/10 px-3 py-1 font-mono text-xs text-white tabular-nums">
               {active + 1} / {media.length}
             </div>
           </motion.div>
@@ -332,7 +332,7 @@ function NavButton({
     <button
       onClick={onClick}
       className={cn(
-        "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20",
+        "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20",
         side === "left" ? "left-4" : "right-4"
       )}
       aria-label={side === "left" ? "Previous" : "Next"}

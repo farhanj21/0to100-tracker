@@ -51,13 +51,13 @@ function PageIntro({ count }: { count: number }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center border border-dashed border-border py-20 text-center">
-      <h2 className="font-display text-3xl">Nothing on the board yet</h2>
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+        Empty grid
+      </p>
+      <h2 className="mt-1 font-display text-3xl">Nothing on the board yet</h2>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Add the first car to open the ranking, or run{" "}
-        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
-          npm run seed
-        </code>{" "}
-        for a starter grid.
+        Add the first car and it takes pole. The board ranks every entry by its
+        0–100 time, quickest first.
       </p>
       <Button asChild className="mt-6">
         <Link href="/cars/new">
@@ -70,12 +70,21 @@ function EmptyState() {
 
 function ConnectionError() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-md border border-destructive/40 bg-destructive/5 py-20 text-center">
+    <div className="flex flex-col items-center justify-center border border-destructive/40 bg-destructive/5 py-20 text-center">
       <AlertTriangle className="mb-3 h-8 w-8 text-destructive" />
-      <h2 className="text-xl font-semibold">Couldn&apos;t reach the database</h2>
-      <p className="mt-1 max-w-md text-sm text-muted-foreground">
-        Check that <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">MONGODB_URI</code>{" "}
-        in <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">.env.local</code>{" "}
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-destructive">
+        Connection error
+      </p>
+      <h2 className="mt-1 font-display text-3xl">Couldn&apos;t reach the database</h2>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+        Check that{" "}
+        <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs">
+          MONGODB_URI
+        </code>{" "}
+        in{" "}
+        <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs">
+          .env.local
+        </code>{" "}
         is set and that MongoDB is running, then refresh.
       </p>
     </div>
