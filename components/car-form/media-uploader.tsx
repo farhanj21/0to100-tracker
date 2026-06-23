@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { UploadCloud, X, Loader2, Image as ImageIcon, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageCropDialog } from "@/components/car-form/image-crop-dialog";
 import { cn } from "@/lib/utils";
 import type { MediaDTO } from "@/lib/types";
 
@@ -13,19 +14,25 @@ interface MediaUploaderProps {
 }
 
 /**
- * Multi-file image/video uploader. Files are uploaded to /api/upload as soon as
- * they're chosen and the returned { type, path } descriptors are appended to the
- * form's `media` array. Previews render straight from the saved public paths.
+ * Multi-file image/video uploader.
+ *
+ * Videos upload to /api/upload immediately. Images are first routed through a
+ * crop dialog (one at a time) so the admin can frame them before upload — the
+ * cropped result is what gets sent to Cloudinary. Previews render from the saved
+ * URLs.
  */
 export function MediaUploader({ value, onChange }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  async function handleFiles(fileList: FileList | null) {
-    if (!fileList || fileList.length === 0) return;
-    const files = Array.from(fileList);
+  // Crop queue: images awaiting cropping before upload.
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropIndex, setCropIndex] = useState(0);
+  const resolvedRef = useRef<File[]>([]);
 
+  async function uploadFiles(files: File[]) {
+    if (files.length === 0) return;
     setUploading(true);
     try {
       const form = new FormData();
@@ -33,10 +40,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
 
       const res = await fetch("/api/upload", { method: "POST", body: form });
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error ?? "Upload failed");
-      }
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
 
       onChange([...value, ...(data.media as MediaDTO[])]);
       toast.success(
@@ -46,8 +50,47 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
     }
+  }
+
+  function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList);
+    if (inputRef.current) inputRef.current.value = "";
+
+    const images = files.filter((f) => f.type.startsWith("image/"));
+    const others = files.filter((f) => !f.type.startsWith("image/"));
+
+    // Videos / other media upload right away.
+    if (others.length) void uploadFiles(others);
+
+    // Images go through the crop dialog first.
+    if (images.length) {
+      resolvedRef.current = [];
+      setCropIndex(0);
+      setCropQueue(images);
+    }
+  }
+
+  function handleCropResolve(file: File) {
+    resolvedRef.current = [...resolvedRef.current, file];
+    const nextIndex = cropIndex + 1;
+    if (nextIndex < cropQueue.length) {
+      setCropIndex(nextIndex);
+    } else {
+      const batch = resolvedRef.current;
+      resolvedRef.current = [];
+      setCropQueue([]);
+      setCropIndex(0);
+      void uploadFiles(batch);
+    }
+  }
+
+  function handleCropCancel() {
+    // Abort the whole pending selection — nothing from it gets uploaded.
+    resolvedRef.current = [];
+    setCropQueue([]);
+    setCropIndex(0);
   }
 
   function removeAt(index: number) {
@@ -90,7 +133,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           {uploading ? "Uploading…" : "Drop images or videos, or click to browse"}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          JPG, PNG, WebP, GIF · MP4, WebM, MOV — multiple allowed
+          JPG, PNG, WebP, GIF · MP4, WebM, MOV — images can be cropped before upload
         </p>
         <input
           ref={inputRef}
@@ -162,6 +205,15 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           </Button>
         </div>
       )}
+
+      {/* Crop dialog (open while images are queued) */}
+      <ImageCropDialog
+        file={cropQueue[cropIndex] ?? null}
+        index={cropIndex}
+        total={cropQueue.length}
+        onResolve={handleCropResolve}
+        onCancel={handleCropCancel}
+      />
     </div>
   );
 }

@@ -35,26 +35,19 @@ export default async function HomePage() {
 
 function PageIntro({ count }: { count: number }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div>
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-          <Flag className="h-3.5 w-3.5" /> Live rankings
-        </div>
+       
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           Acceleration Leaderboard
         </h1>
         <p className="mt-1.5 max-w-xl text-muted-foreground">
           Every car ranked by its 0–100&nbsp;km/h time — fastest to slowest.
-          Ranks recompute automatically whenever a time changes.
         </p>
       </div>
-      {count > 0 && (
-        <Button asChild variant="outline">
-          <Link href="/cars/new">
-            <Plus className="h-4 w-4" /> Add a car
-          </Link>
-        </Button>
-      )}
+       <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <Flag className="h-3.5 w-3.5" /> Live Rankings
+        </div>
     </div>
   );
 }

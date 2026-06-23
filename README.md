@@ -71,6 +71,28 @@ A `Car` has: `modelYear`, `manufacturer`, `carModel`, `engineSize` (L),
 `zeroToHundred` (seconds), and `media[]` of `{ type: 'image' | 'video', path }`.
 Timestamps are enabled. `position` is computed on read, never persisted.
 
+## Admin access
+
+Viewing the leaderboard is public. Adding, editing, and deleting cars (and
+managing media) requires the admin passcode. Set `ADMIN_PASSCODE` and a random
+`SESSION_SECRET` in `.env.local`, then visit `/login` and enter the passcode —
+this sets a signed, httpOnly session cookie (7-day expiry).
+
+Enforcement is layered:
+
+- **Write APIs** (`POST/PUT/DELETE /api/cars`, `PATCH …/thumbnail`,
+  `POST /api/upload`) call `requireApiAuth()` and return **401** without a valid
+  session — the real gate.
+- **`middleware.ts`** issues a **307** redirect to `/login` for `/cars/new` and
+  `/cars/[id]/edit` before they render.
+- **UI** hides Add / Edit / Delete / "Set as thumbnail" unless signed in.
+
+Generate a secret with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
 ## Media storage (Cloudinary)
 
 Uploads flow through the `/api/upload` route handler, which calls

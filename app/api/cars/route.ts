@@ -3,6 +3,7 @@ import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
 import { getRankedCars } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
+import { requireApiAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,9 @@ export async function GET() {
 
 // POST /api/cars — create a car. Body is JSON validated by zod.
 export async function POST(request: Request) {
+  const denied = requireApiAuth();
+  if (denied) return denied;
+
   try {
     const body = await request.json();
     const parsed = carInputSchema.safeParse(body);

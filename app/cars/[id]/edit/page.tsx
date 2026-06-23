@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getCarById } from "@/lib/cars";
 import { CarForm } from "@/components/car-form/car-form";
 import { carTitle } from "@/lib/utils";
+import { isAuthenticated } from "@/lib/auth";
 import type { CarInput } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,8 @@ export default async function EditCarPage({
 }: {
   params: { id: string };
 }) {
+  if (!isAuthenticated()) redirect(`/login?next=/cars/${params.id}/edit`);
+
   const car = await getCarById(params.id);
   if (!car) notFound();
 

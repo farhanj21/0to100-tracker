@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
+import { requireApiAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,9 @@ type Params = { params: { id: string } };
 // PATCH /api/cars/:id/thumbnail — promote one media item to the front of the
 // array, making it the leaderboard thumbnail (and gallery hero). Body: { path }.
 export async function PATCH(request: Request, { params }: Params) {
+  const denied = requireApiAuth();
+  if (denied) return denied;
+
   if (!mongoose.Types.ObjectId.isValid(params.id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveFiles } from "@/lib/storage";
+import { requireApiAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 // Media can be large; run on the Node.js runtime with no edge size limits.
@@ -8,6 +9,9 @@ export const runtime = "nodejs";
 // POST /api/upload — multipart form-data with one or more "files".
 // Returns the saved media descriptors: [{ type, path }].
 export async function POST(request: Request) {
+  const denied = requireApiAuth();
+  if (denied) return denied;
+
   try {
     const formData = await request.formData();
     const files = formData

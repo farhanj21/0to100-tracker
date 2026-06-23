@@ -13,6 +13,7 @@ import {
   Hash,
 } from "lucide-react";
 import { getCarById, getCarCount } from "@/lib/cars";
+import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
 import { RankBadge } from "@/components/leaderboard/rank-badge";
@@ -49,6 +50,7 @@ export default async function CarDetailPage({
   ]);
   if (!car) notFound();
 
+  const authed = isAuthenticated();
   const isPodium = car.position <= 3;
 
   const specs = [
@@ -70,19 +72,21 @@ export default async function CarDetailPage({
         >
           <ArrowLeft className="h-4 w-4" /> Leaderboard
         </Link>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/cars/${car.id}/edit`}>
-              <Pencil className="h-4 w-4" /> Edit
-            </Link>
-          </Button>
-          <DeleteCarButton carId={car.id} carName={carTitle(car)} />
-        </div>
+        {authed && (
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+              <Link href={`/cars/${car.id}/edit`}>
+                <Pencil className="h-4 w-4" /> Edit
+              </Link>
+            </Button>
+            <DeleteCarButton carId={car.id} carName={carTitle(car)} />
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        {/* Gallery */}
-        <Gallery media={car.media} carId={car.id} />
+        {/* Gallery — "Set as thumbnail" only available to admins */}
+        <Gallery media={car.media} carId={authed ? car.id : undefined} />
 
         {/* Summary */}
         <div className="space-y-5">

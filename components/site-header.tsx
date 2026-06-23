@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { Gauge, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth-button";
+import { isAuthenticated } from "@/lib/auth";
 
 export function SiteHeader() {
+  const authed = isAuthenticated();
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
@@ -20,12 +24,17 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <Button asChild size="sm">
-          <Link href="/cars/new">
-            <Plus className="h-4 w-4" />
-            Add Car
-          </Link>
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <AuthButton authed={authed} />
+          {authed && (
+            <Button asChild size="sm">
+              <Link href="/cars/new">
+                <Plus className="h-4 w-4" />
+                Add Car
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );

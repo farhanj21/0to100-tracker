@@ -5,6 +5,7 @@ import Car from "@/lib/models/Car";
 import { getCarById } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
 import { deleteManyMedia } from "@/lib/storage";
+import { requireApiAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,9 @@ export async function GET(_request: Request, { params }: Params) {
 // PUT /api/cars/:id — replace car fields. Media files removed from the form are
 // deleted from disk so we don't leave orphans behind.
 export async function PUT(request: Request, { params }: Params) {
+  const denied = requireApiAuth();
+  if (denied) return denied;
+
   if (!isValidId(params.id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
@@ -74,6 +78,9 @@ export async function PUT(request: Request, { params }: Params) {
 
 // DELETE /api/cars/:id — remove the car and clean up its media from disk.
 export async function DELETE(_request: Request, { params }: Params) {
+  const denied = requireApiAuth();
+  if (denied) return denied;
+
   if (!isValidId(params.id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }

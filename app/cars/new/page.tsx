@@ -1,10 +1,15 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { CarForm } from "@/components/car-form/car-form";
+import { isAuthenticated } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Add a car — 0–100 Tracker" };
 
 export default function NewCarPage() {
+  if (!isAuthenticated()) redirect("/login?next=/cars/new");
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
