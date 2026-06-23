@@ -107,7 +107,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
           <Field label="Engine size (L)" error={errors.engineSize?.message}>
             <Input
               type="number"
-              step="0.1"
+              step="any"
               inputMode="decimal"
               {...register("engineSize")}
             />
@@ -156,7 +156,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             <Gauge className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
             <Input
               type="number"
-              step="0.1"
+              step="any"
               inputMode="decimal"
               className="pl-9 font-mono text-lg"
               {...register("zeroToHundred")}

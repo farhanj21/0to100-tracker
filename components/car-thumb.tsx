@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
 /**
- * Renders a car's primary thumbnail: the first image if present, otherwise the
- * first video's poster frame, otherwise a placeholder. Plain <img>/<video> are
- * used (not next/image) because uploads are arbitrary local files.
+ * Renders a car's primary thumbnail — the first media item (the one chosen via
+ * "Set as thumbnail" on the detail page, which moves it to the front). Falls
+ * back to a placeholder when there's no media. Plain <img>/<video> are used
+ * (not next/image) because uploads are arbitrary Cloudinary URLs.
  */
 export function CarThumb({
   car,
@@ -14,8 +15,9 @@ export function CarThumb({
   car: Pick<CarDTO, "media" | "manufacturer" | "carModel">;
   className?: string;
 }) {
-  const image = car.media.find((m) => m.type === "image");
-  const video = !image ? car.media.find((m) => m.type === "video") : undefined;
+  const primary = car.media[0];
+  const image = primary?.type === "image" ? primary : undefined;
+  const video = primary?.type === "video" ? primary : undefined;
 
   return (
     <div

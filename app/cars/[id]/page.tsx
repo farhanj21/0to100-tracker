@@ -82,7 +82,7 @@ export default async function CarDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Gallery */}
-        <Gallery media={car.media} />
+        <Gallery media={car.media} carId={car.id} />
 
         {/* Summary */}
         <div className="space-y-5">

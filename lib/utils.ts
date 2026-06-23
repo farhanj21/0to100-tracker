@@ -5,9 +5,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format a 0–100 time with a fixed one-decimal precision, e.g. "2.5". */
+/** Format a 0–100 time with two-decimal precision, e.g. "6.57". */
 export function formatTime(seconds: number): string {
-  return seconds.toFixed(1);
+  return seconds.toFixed(2);
 }
 
 /** Format engine size, e.g. 2 -> "2.0L", 1.5 -> "1.5L". 0 means electric-ish/NA. */

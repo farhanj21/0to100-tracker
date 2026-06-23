@@ -1,13 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X, Play, ImageOff } from "lucide-react";
+import { toast } from "sonner";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Play,
+  ImageOff,
+  Star,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MediaDTO } from "@/lib/types";
 
-export function Gallery({ media }: { media: MediaDTO[] }) {
+export function Gallery({
+  media,
+  carId,
+}: {
+  media: MediaDTO[];
+  /** When provided, enables the "Set as thumbnail" action on the detail page. */
+  carId?: string;
+}) {
+  const router = useRouter();
   const [active, setActive] = useState<number | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
 
   const close = useCallback(() => setActive(null), []);
   const next = useCallback(
@@ -20,6 +39,32 @@ export function Gallery({ media }: { media: MediaDTO[] }) {
         i === null ? i : (i - 1 + media.length) % media.length
       ),
     [media.length]
+  );
+
+  const setAsThumbnail = useCallback(
+    async (path: string) => {
+      if (!carId) return;
+      setPending(path);
+      try {
+        const res = await fetch(`/api/cars/${carId}/thumbnail`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? "Failed to set thumbnail");
+        }
+        toast.success("Leaderboard thumbnail updated");
+        setActive(null);
+        router.refresh();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to set thumbnail");
+      } finally {
+        setPending(null);
+      }
+    },
+    [carId, router]
   );
 
   useEffect(() => {
@@ -43,10 +88,11 @@ export function Gallery({ media }: { media: MediaDTO[] }) {
   }
 
   const [hero, ...rest] = media;
+  const canManage = Boolean(carId);
 
   return (
     <div className="space-y-3">
-      {/* Hero */}
+      {/* Hero (current thumbnail) */}
       <button
         type="button"
         onClick={() => setActive(0)}
@@ -54,20 +100,46 @@ export function Gallery({ media }: { media: MediaDTO[] }) {
       >
         <MediaTile media={hero} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+        {canManage && (
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-primary/90 px-2 py-1 text-xs font-medium text-primary-foreground shadow">
+            <Star className="h-3.5 w-3.5 fill-current" /> Leaderboard thumbnail
+          </span>
+        )}
       </button>
 
       {/* Thumbnails */}
       {rest.length > 0 && (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
           {rest.map((m, i) => (
-            <button
+            <div
               key={`${m.path}-${i}`}
-              type="button"
-              onClick={() => setActive(i + 1)}
-              className="relative aspect-square overflow-hidden rounded-lg ring-1 ring-border transition hover:ring-primary"
+              className="group relative aspect-square overflow-hidden rounded-lg ring-1 ring-border transition hover:ring-primary"
             >
-              <MediaTile media={m} thumb />
-            </button>
+              <button
+                type="button"
+                onClick={() => setActive(i + 1)}
+                className="block h-full w-full"
+                aria-label="Open media"
+              >
+                <MediaTile media={m} thumb />
+              </button>
+              {canManage && (
+                <button
+                  type="button"
+                  onClick={() => setAsThumbnail(m.path)}
+                  disabled={pending !== null}
+                  title="Set as leaderboard thumbnail"
+                  className="absolute inset-x-1 bottom-1 inline-flex items-center justify-center gap-1 rounded-md bg-background/85 px-1.5 py-1 text-[10px] font-medium text-foreground opacity-0 backdrop-blur transition-opacity hover:bg-primary hover:text-primary-foreground disabled:opacity-60 group-hover:opacity-100"
+                >
+                  {pending === m.path ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Star className="h-3 w-3" />
+                  )}
+                  Thumbnail
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
@@ -89,6 +161,33 @@ export function Gallery({ media }: { media: MediaDTO[] }) {
             >
               <X className="h-5 w-5" />
             </button>
+
+            {/* Set-as-thumbnail control (top-left) */}
+            {canManage && (
+              <div
+                className="absolute left-4 top-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {active === 0 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 text-xs font-medium text-primary-foreground">
+                    <Star className="h-3.5 w-3.5 fill-current" /> Current thumbnail
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setAsThumbnail(media[active].path)}
+                    disabled={pending !== null}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+                  >
+                    {pending === media[active].path ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Star className="h-3.5 w-3.5" />
+                    )}
+                    Set as thumbnail
+                  </button>
+                )}
+              </div>
+            )}
 
             {media.length > 1 && (
               <>
@@ -154,11 +253,7 @@ function MediaTile({ media, thumb }: { media: MediaDTO; thumb?: boolean }) {
         playsInline
         preload="metadata"
       />
-      <span
-        className={cn(
-          "absolute inset-0 flex items-center justify-center bg-black/30",
-        )}
-      >
+      <span className="absolute inset-0 flex items-center justify-center bg-black/30">
         <Play className={cn("text-white", thumb ? "h-4 w-4" : "h-10 w-10")} />
       </span>
     </>
