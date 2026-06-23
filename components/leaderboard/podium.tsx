@@ -19,9 +19,8 @@ export function Podium({ cars }: { cars: CarDTO[] }) {
   const top3 = cars.slice(0, 3);
   if (top3.length === 0) return null;
 
-  // Visual order: 2nd, 1st, 3rd (1st raised in the middle) on desktop.
-  const order = top3.length === 3 ? [1, 0, 2] : top3.map((_, i) => i);
-
+  // Render in natural order (1st, 2nd, 3rd) so mobile stacks them correctly;
+  // CSS `order` rearranges to 2nd / 1st / 3rd (1st raised) only on sm+.
   return (
     <section>
       <div className="mb-4 flex items-center gap-2">
@@ -31,18 +30,20 @@ export function Podium({ cars }: { cars: CarDTO[] }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {order.map((idx, i) => {
-          const car = top3[idx];
+        {top3.map((car, idx) => {
           const s = STYLES[idx];
           const raised = idx === 0;
+          // Desktop visual placement: 2nd | 1st | 3rd.
+          const desktopOrder =
+            idx === 0 ? "sm:order-2" : idx === 1 ? "sm:order-1" : "sm:order-3";
           return (
             <motion.div
               key={car.id}
               layout
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06, type: "spring", stiffness: 260, damping: 26 }}
-              className={cn(raised && "sm:-mt-4")}
+              transition={{ delay: idx * 0.06, type: "spring", stiffness: 260, damping: 26 }}
+              className={cn(desktopOrder, raised && "sm:-mt-4")}
             >
               <Link
                 href={`/cars/${car.id}`}

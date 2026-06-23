@@ -74,7 +74,7 @@ export default async function CarDetailPage({
         </Link>
         {authed && (
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link href={`/cars/${car.id}/edit`}>
                 <Pencil className="h-4 w-4" /> Edit
               </Link>

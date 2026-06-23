@@ -28,9 +28,9 @@ export function SiteHeader() {
           <AuthButton authed={authed} />
           {authed && (
             <Button asChild size="sm">
-              <Link href="/cars/new">
+              <Link href="/cars/new" aria-label="Add car">
                 <Plus className="h-4 w-4" />
-                Add Car
+                <span className="hidden sm:inline">Add Car</span>
               </Link>
             </Button>
           )}

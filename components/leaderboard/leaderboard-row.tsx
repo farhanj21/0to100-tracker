@@ -23,16 +23,16 @@ export function LeaderboardRow({ car }: { car: CarDTO }) {
       <Link
         href={`/cars/${car.id}`}
         className={cn(
-          "group grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-xl border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 sm:gap-5 sm:p-4",
+          "group grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 sm:gap-5 sm:p-4",
           isPodium ? "border-border" : "border-border/60"
         )}
       >
         {/* Rank + thumbnail */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4">
           <RankBadge position={car.position} />
           <CarThumb
             car={car}
-            className="h-14 w-20 shrink-0 sm:h-16 sm:w-24"
+            className="h-12 w-16 shrink-0 sm:h-16 sm:w-24"
           />
         </div>
 

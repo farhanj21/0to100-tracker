@@ -46,7 +46,7 @@ export function DeleteCarButton({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !deleting && setOpen(o)}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         <Trash2 className="h-4 w-4" /> Delete
       </Button>
 

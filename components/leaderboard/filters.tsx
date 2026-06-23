@@ -56,10 +56,10 @@ export function Filters({
     JSON.stringify(value) !== JSON.stringify(EMPTY_FILTERS);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-4 backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+    <div className="rounded-xl border border-border bg-card/60 p-3 backdrop-blur sm:p-4">
+      <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:items-end lg:gap-4">
         {/* Search */}
-        <div className="flex-1 min-w-[180px]">
+        <div className="col-span-2 lg:flex-1 lg:min-w-[180px]">
           <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <Search className="h-3.5 w-3.5" /> Search
           </label>
@@ -103,7 +103,7 @@ export function Filters({
         />
 
         {/* Year range */}
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             Year range
           </label>
@@ -112,7 +112,7 @@ export function Filters({
               type="number"
               inputMode="numeric"
               placeholder="From"
-              className="w-20"
+              className="w-full lg:w-20"
               value={value.yearMin}
               onChange={(e) => set("yearMin", e.target.value)}
             />
@@ -121,7 +121,7 @@ export function Filters({
               type="number"
               inputMode="numeric"
               placeholder="To"
-              className="w-20"
+              className="w-full lg:w-20"
               value={value.yearMax}
               onChange={(e) => set("yearMax", e.target.value)}
             />
@@ -165,7 +165,7 @@ function FilterSelect({
   options: string[];
 }) {
   return (
-    <div className="min-w-[150px]">
+    <div className="w-full lg:min-w-[150px]">
       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
         {label}
       </label>
