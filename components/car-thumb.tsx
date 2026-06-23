@@ -1,5 +1,5 @@
 import { Car as CarIcon, Play } from "lucide-react";
-import { cn, cloudinaryThumb } from "@/lib/utils";
+import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
 import { youTubeThumb } from "@/lib/youtube";
 import type { CarDTO } from "@/lib/types";
 
@@ -13,17 +13,34 @@ export function CarThumb({
   car,
   className,
   transform,
+  fit = "cover",
 }: {
   car: Pick<CarDTO, "media" | "manufacturer" | "carModel">;
   className?: string;
-  /** Display px for a Cloudinary fill-crop; omit to load the image as-is. */
+  /** Display px for the Cloudinary resize; omit to load the image as-is. */
   transform?: { w: number; h: number };
+  /**
+   * "cover" fills the box (may crop). "contain" preserves the original
+   * framing, scaling the whole photo to fit inside the box.
+   */
+  fit?: "cover" | "contain";
 }) {
   const primary = car.media[0];
   const imageSrc =
     primary?.type === "image" && transform
-      ? cloudinaryThumb(primary.path, transform.w, transform.h)
+      ? cloudinaryThumb(
+          primary.path,
+          transform.w,
+          transform.h,
+          fit === "contain" ? "fit" : "fill"
+        )
       : primary?.path;
+  // When fitting (no crop), a blurred copy fills the box so portrait/odd
+  // ratios don't leave flat bars.
+  const blurSrc =
+    primary?.type === "image" && transform && fit === "contain"
+      ? cloudinaryBlurFill(primary.path, 48, 36)
+      : null;
 
   return (
     <div
@@ -33,13 +50,27 @@ export function CarThumb({
       )}
     >
       {primary?.type === "image" ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageSrc}
-          alt={`${car.manufacturer} ${car.carModel}`}
-          className="h-full w-full object-cover"
-          loading="lazy"
-        />
+        <>
+          {blurSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={blurSrc}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover"
+            />
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageSrc}
+            alt={`${car.manufacturer} ${car.carModel}`}
+            className={cn(
+              "relative h-full w-full",
+              fit === "contain" ? "object-contain" : "object-cover"
+            )}
+            loading="lazy"
+          />
+        </>
       ) : primary?.type === "youtube" ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}

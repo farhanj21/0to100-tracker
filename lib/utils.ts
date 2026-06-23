@@ -42,17 +42,48 @@ export function formatGap(seconds: number): string {
 }
 
 /**
- * Build an optimised, smart-cropped thumbnail URL for a Cloudinary image.
- * Uploads are arbitrary phone photos at full resolution; left raw they load
- * heavy and crop badly in CSS. This injects a fill crop with auto gravity
- * (keeps the car in frame) plus auto format/quality right after `/upload/`.
- * Non-Cloudinary URLs are returned untouched. Pass display px; we render at
- * 2x for retina sharpness.
+ * Build an optimised thumbnail URL for a Cloudinary image. Uploads are
+ * arbitrary phone photos at full resolution; left raw they load heavy and
+ * crop badly in CSS. This injects a resize plus auto format/quality right
+ * after `/upload/`. Non-Cloudinary URLs are returned untouched. Pass display
+ * px; we render at 2x for retina sharpness.
+ *
+ * - `"fill"` crops to exactly fill the box (centre gravity) — use when the box
+ *   must be fully covered.
+ * - `"fit"` scales the whole image to fit inside the box with no cropping, so
+ *   the original framing is preserved (the box background shows as letterbox).
  */
-export function cloudinaryThumb(url: string, w: number, h: number): string {
+export function cloudinaryThumb(
+  url: string,
+  w: number,
+  h: number,
+  mode: "fill" | "fit" = "fill"
+): string {
   const marker = "/upload/";
   const i = url.indexOf(marker);
   if (i === -1) return url;
-  const transform = `c_fill,g_auto,w_${w * 2},h_${h * 2},q_auto,f_auto/`;
+  const crop =
+    mode === "fit"
+      ? `c_fit,w_${w * 2},h_${h * 2}`
+      : // g_center, not g_auto: object-aware gravity needs Cloudinary's paid
+        // add-on, and the free saliency fallback often locks onto sky/plate
+        // instead of the car. Cars are framed centrally, so centre crop is
+        // the reliable choice.
+        `c_fill,g_center,w_${w * 2},h_${h * 2}`;
+  const transform = `${crop},q_auto,f_auto/`;
+  return url.slice(0, i + marker.length) + transform + url.slice(i + marker.length);
+}
+
+/**
+ * A small, heavily blurred fill of a Cloudinary image, used purely as a
+ * background wash behind a `contain`ed thumbnail so the box fills edge to edge
+ * with no flat letterbox bars (the subject is never cropped). Tiny + blurred,
+ * so it costs almost nothing to load.
+ */
+export function cloudinaryBlurFill(url: string, w: number, h: number): string {
+  const marker = "/upload/";
+  const i = url.indexOf(marker);
+  if (i === -1) return url;
+  const transform = `c_fill,w_${w},h_${h},e_blur:1500,q_auto,f_auto/`;
   return url.slice(0, i + marker.length) + transform + url.slice(i + marker.length);
 }

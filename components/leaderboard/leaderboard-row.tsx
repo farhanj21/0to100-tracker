@@ -46,11 +46,12 @@ export function LeaderboardRow({
           {String(car.position).padStart(2, "0")}
         </span>
 
-        {/* Thumbnail — wider cinematic crop, smart-cropped + optimised */}
+        {/* Thumbnail — fill a tidy 4:3 box with a centre crop (cars are framed
+            centrally), optimised. Fills edge to edge, no gaps. */}
         <CarThumb
           car={car}
-          transform={{ w: 112, h: 72 }}
-          className="aspect-[14/9] w-20 shrink-0 rounded-none ring-1 ring-border sm:w-28"
+          transform={{ w: 96, h: 72 }}
+          className="aspect-[4/3] w-20 shrink-0 rounded-none bg-secondary ring-1 ring-border sm:w-24"
         />
 
         {/* Identity + specs (icons + readable grotesk, not cramped mono caps) */}
