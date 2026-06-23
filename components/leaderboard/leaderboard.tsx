@@ -54,11 +54,12 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
     // Note: each car keeps its true global `position` (assigned server-side).
   }, [cars, filters]);
 
-  // The cover hero is always the true global #1; the board lists the rest.
+  // The cover hero is always the true global #1; the board lists the full
+  // ranking, leader included, so the table/cards are a complete grid.
   const hero = cars[0];
   const leaderTime = hero.zeroToHundred;
   const marginToNext = cars[1] ? cars[1].zeroToHundred - leaderTime : 0;
-  const boardCars = filtered.filter((c) => c.id !== hero.id);
+  const boardCars = filtered;
 
   return (
     <div className="space-y-10">
@@ -68,7 +69,7 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
         <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
           <h2 className="font-display text-3xl">The Board</h2>
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            {cars.length - 1} more, quickest first
+            {cars.length} cars, quickest first
           </span>
         </div>
 

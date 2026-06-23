@@ -33,10 +33,26 @@ export function ordinal(n: number): string {
 }
 
 /**
- * Format a gap to the leader, e.g. 0.3 -> "+0.30". A leader (0) renders as an
- * em dash so the row reads "no gap".
+ * Format a gap to the leader, e.g. 0.3 -> "+0.30". The leader (0) renders as a
+ * dash so the row reads "no gap".
  */
 export function formatGap(seconds: number): string {
   if (seconds <= 0.0001) return "—";
   return `+${seconds.toFixed(2)}`;
+}
+
+/**
+ * Build an optimised, smart-cropped thumbnail URL for a Cloudinary image.
+ * Uploads are arbitrary phone photos at full resolution; left raw they load
+ * heavy and crop badly in CSS. This injects a fill crop with auto gravity
+ * (keeps the car in frame) plus auto format/quality right after `/upload/`.
+ * Non-Cloudinary URLs are returned untouched. Pass display px; we render at
+ * 2x for retina sharpness.
+ */
+export function cloudinaryThumb(url: string, w: number, h: number): string {
+  const marker = "/upload/";
+  const i = url.indexOf(marker);
+  if (i === -1) return url;
+  const transform = `c_fill,g_auto,w_${w * 2},h_${h * 2},q_auto,f_auto/`;
+  return url.slice(0, i + marker.length) + transform + url.slice(i + marker.length);
 }

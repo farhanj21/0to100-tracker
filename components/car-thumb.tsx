@@ -1,5 +1,5 @@
 import { Car as CarIcon, Play } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, cloudinaryThumb } from "@/lib/utils";
 import { youTubeThumb } from "@/lib/youtube";
 import type { CarDTO } from "@/lib/types";
 
@@ -12,11 +12,18 @@ import type { CarDTO } from "@/lib/types";
 export function CarThumb({
   car,
   className,
+  transform,
 }: {
   car: Pick<CarDTO, "media" | "manufacturer" | "carModel">;
   className?: string;
+  /** Display px for a Cloudinary fill-crop; omit to load the image as-is. */
+  transform?: { w: number; h: number };
 }) {
   const primary = car.media[0];
+  const imageSrc =
+    primary?.type === "image" && transform
+      ? cloudinaryThumb(primary.path, transform.w, transform.h)
+      : primary?.path;
 
   return (
     <div
@@ -28,7 +35,7 @@ export function CarThumb({
       {primary?.type === "image" ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={primary.path}
+          src={imageSrc}
           alt={`${car.manufacturer} ${car.carModel}`}
           className="h-full w-full object-cover"
           loading="lazy"

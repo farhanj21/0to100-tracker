@@ -46,10 +46,11 @@ export function LeaderboardRow({
           {String(car.position).padStart(2, "0")}
         </span>
 
-        {/* Thumbnail */}
+        {/* Thumbnail — wider cinematic crop, smart-cropped + optimised */}
         <CarThumb
           car={car}
-          className="h-11 w-16 shrink-0 rounded-none ring-1 ring-border sm:h-14 sm:w-20"
+          transform={{ w: 112, h: 72 }}
+          className="aspect-[14/9] w-20 shrink-0 rounded-none ring-1 ring-border sm:w-28"
         />
 
         {/* Identity + specs (icons + readable grotesk, not cramped mono caps) */}
@@ -75,16 +76,17 @@ export function LeaderboardRow({
           </div>
         </div>
 
-        {/* Gap to leader (sm+) */}
+        {/* Gap to leader (sm+) — fixed-width so the column stays tidy */}
         <span className="hidden text-right font-mono text-xs tabular-nums text-muted-foreground sm:block">
           {formatGap(gap)}
           {gap > 0.0001 && <span className="text-[10px]"> s</span>}
         </span>
 
-        {/* Time */}
+        {/* Time — number sits in a fixed-width right-aligned box so decimals
+            line up across rows regardless of digit count. */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-baseline justify-end gap-1">
-            <span className="font-mono text-2xl font-bold tabular-nums tracking-tight transition-transform group-hover:-translate-x-0.5 sm:text-3xl">
+            <span className="w-[3.4rem] text-right font-mono text-2xl font-bold tabular-nums tracking-tight transition-transform group-hover:-translate-x-0.5 sm:w-[4rem] sm:text-3xl">
               {formatTime(car.zeroToHundred)}
             </span>
             <span className="font-mono text-xs text-muted-foreground">s</span>
