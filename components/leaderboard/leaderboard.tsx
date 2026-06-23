@@ -77,7 +77,7 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
         ) : view === "table" ? (
           <LeaderboardTable cars={filtered} />
         ) : (
-          <motion.div layout className="space-y-2.5">
+          <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
               {filtered.map((car) => (
                 <LeaderboardRow key={car.id} car={car} />
