@@ -1,6 +1,7 @@
 import "server-only";
 import type { UploadApiResponse } from "cloudinary";
 import { getCloudinary, CLOUDINARY_FOLDER } from "@/lib/cloudinary";
+import type { MediaType } from "@/lib/constants";
 
 /**
  * Storage abstraction for uploaded media — backed by Cloudinary.
@@ -13,7 +14,7 @@ import { getCloudinary, CLOUDINARY_FOLDER } from "@/lib/cloudinary";
  * resource type (Cloudinary needs it to destroy videos vs images).
  */
 
-export type SavedMedia = { type: "image" | "video"; path: string };
+export type SavedMedia = { type: MediaType; path: string };
 
 /** Upload a Buffer to Cloudinary via a stream and resolve the API response. */
 function uploadBuffer(

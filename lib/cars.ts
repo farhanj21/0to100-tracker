@@ -17,7 +17,7 @@ type LeanCar = {
   transmission: CarDTO["transmission"];
   induction: CarDTO["induction"];
   zeroToHundred: number;
-  media: { type: "image" | "video"; path: string }[];
+  media: { type: CarDTO["media"][number]["type"]; path: string }[];
   createdAt: Date;
   updatedAt: Date;
 };

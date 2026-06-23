@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
 export function Gallery({
@@ -211,6 +212,16 @@ export function Gallery({
                   alt=""
                   className="max-h-[85vh] w-auto rounded-lg object-contain"
                 />
+              ) : media[active].type === "youtube" ? (
+                <div className="aspect-video w-[90vw] max-w-4xl">
+                  <iframe
+                    src={`${youTubeEmbedUrl(media[active].path)}?autoplay=1&rel=0`}
+                    title="YouTube video player"
+                    className="h-full w-full rounded-lg"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
               ) : (
                 <video
                   src={media[active].path}
@@ -242,6 +253,22 @@ function MediaTile({ media, thumb }: { media: MediaDTO; thumb?: boolean }) {
         className="h-full w-full object-cover"
         loading="lazy"
       />
+    );
+  }
+  if (media.type === "youtube") {
+    return (
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={youTubeThumb(media.path)}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <Play className={cn("text-white", thumb ? "h-4 w-4" : "h-10 w-10")} />
+        </span>
+      </>
     );
   }
   return (

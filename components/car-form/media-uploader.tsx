@@ -9,10 +9,14 @@ import {
   Image as ImageIcon,
   Film,
   Crop as CropIcon,
+  Youtube,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ImageCropDialog } from "@/components/car-form/image-crop-dialog";
 import { cn } from "@/lib/utils";
+import { extractYouTubeId, youTubeThumb } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
 interface MediaUploaderProps {
@@ -42,6 +46,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
 
   // Crop queue: images awaiting cropping before upload.
   const [cropQueue, setCropQueue] = useState<File[]>([]);
@@ -148,6 +153,22 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
     setRecropIndex(null);
   }
 
+  function addYouTubeLink() {
+    const id = extractYouTubeId(linkInput);
+    if (!id) {
+      toast.error("Enter a valid YouTube link");
+      return;
+    }
+    if (value.some((m) => m.type === "youtube" && m.path === id)) {
+      toast.error("That video is already added");
+      setLinkInput("");
+      return;
+    }
+    onChange([...value, { type: "youtube", path: id }]);
+    toast.success("YouTube video added");
+    setLinkInput("");
+  }
+
   function removeAt(index: number) {
     onChange(value.filter((_, i) => i !== index));
   }
@@ -200,6 +221,35 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
         />
       </div>
 
+      {/* YouTube link */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Youtube className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500" />
+          <Input
+            type="url"
+            inputMode="url"
+            placeholder="Paste a YouTube link to embed…"
+            className="pl-9"
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addYouTubeLink();
+              }
+            }}
+          />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={addYouTubeLink}
+          disabled={!linkInput.trim()}
+        >
+          <Plus className="h-4 w-4" /> Add
+        </Button>
+      </div>
+
       {/* Previews */}
       {value.length > 0 && (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
@@ -215,6 +265,18 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
                   alt="upload preview"
                   className="h-full w-full object-cover"
                 />
+              ) : m.type === "youtube" ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={youTubeThumb(m.path)}
+                    alt="YouTube preview"
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <Youtube className="h-6 w-6 text-white" />
+                  </span>
+                </>
               ) : (
                 <video
                   src={m.path}
@@ -227,6 +289,8 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
               <span className="absolute left-1 top-1 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white">
                 {m.type === "image" ? (
                   <ImageIcon className="inline h-3 w-3" />
+                ) : m.type === "youtube" ? (
+                  <Youtube className="inline h-3 w-3" />
                 ) : (
                   <Film className="inline h-3 w-3" />
                 )}

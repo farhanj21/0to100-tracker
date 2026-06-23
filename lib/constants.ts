@@ -14,7 +14,7 @@ export const TRANSMISSIONS = ["Auto", "Manual"] as const;
 
 export const INDUCTIONS = ["NA", "Turbocharged"] as const;
 
-export const MEDIA_TYPES = ["image", "video"] as const;
+export const MEDIA_TYPES = ["image", "video", "youtube"] as const;
 
 export type PowertrainType = (typeof POWERTRAIN_TYPES)[number];
 export type Transmission = (typeof TRANSMISSIONS)[number];

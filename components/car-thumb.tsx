@@ -1,5 +1,6 @@
 import { Car as CarIcon, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { youTubeThumb } from "@/lib/youtube";
 import type { CarDTO } from "@/lib/types";
 
 /**
@@ -16,8 +17,6 @@ export function CarThumb({
   className?: string;
 }) {
   const primary = car.media[0];
-  const image = primary?.type === "image" ? primary : undefined;
-  const video = primary?.type === "video" ? primary : undefined;
 
   return (
     <div
@@ -26,18 +25,31 @@ export function CarThumb({
         className
       )}
     >
-      {image ? (
+      {primary?.type === "image" ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={image.path}
+          src={primary.path}
           alt={`${car.manufacturer} ${car.carModel}`}
           className="h-full w-full object-cover"
           loading="lazy"
         />
-      ) : video ? (
+      ) : primary?.type === "youtube" ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={youTubeThumb(primary.path)}
+            alt={`${car.manufacturer} ${car.carModel}`}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+            <Play className="h-4 w-4 text-white" />
+          </span>
+        </>
+      ) : primary?.type === "video" ? (
         <>
           <video
-            src={video.path}
+            src={primary.path}
             className="h-full w-full object-cover"
             muted
             playsInline
