@@ -14,6 +14,7 @@ export function CarThumb({
   className,
   transform,
   fit = "cover",
+  interactive = false,
 }: {
   car: Pick<CarDTO, "media" | "manufacturer" | "carModel">;
   className?: string;
@@ -24,6 +25,8 @@ export function CarThumb({
    * framing, scaling the whole photo to fit inside the box.
    */
   fit?: "cover" | "contain";
+  /** Adds a gentle zoom on the nearest `.group` hover (e.g. a card link). */
+  interactive?: boolean;
 }) {
   const primary = car.media[0];
   const imageSrc =
@@ -41,6 +44,14 @@ export function CarThumb({
     primary?.type === "image" && transform && fit === "contain"
       ? cloudinaryBlurFill(primary.path, 48, 36)
       : null;
+
+  // Subtle treatment so varied casual phone photos cohere: a touch more
+  // contrast/saturation, and the zoom-on-hover when interactive.
+  const mediaClass = cn(
+    "h-full w-full [filter:contrast(1.04)_saturate(1.06)]",
+    interactive &&
+      "transition-transform duration-500 ease-out group-hover:scale-[1.06] motion-reduce:transform-none"
+  );
 
   return (
     <div
@@ -65,10 +76,16 @@ export function CarThumb({
             src={imageSrc}
             alt={`${car.manufacturer} ${car.carModel}`}
             className={cn(
-              "relative h-full w-full",
+              mediaClass,
+              "relative",
               fit === "contain" ? "object-contain" : "object-cover"
             )}
             loading="lazy"
+          />
+          {/* Faint vignette to seat the photo. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_120%_at_50%_38%,transparent_58%,rgba(0,0,0,0.24))]"
           />
         </>
       ) : primary?.type === "youtube" ? (
@@ -77,7 +94,7 @@ export function CarThumb({
           <img
             src={youTubeThumb(primary.path)}
             alt={`${car.manufacturer} ${car.carModel}`}
-            className="h-full w-full object-cover"
+            className={cn(mediaClass, "object-cover")}
             loading="lazy"
           />
           <span className="absolute inset-0 flex items-center justify-center bg-black/30">
@@ -88,7 +105,7 @@ export function CarThumb({
         <>
           <video
             src={primary.path}
-            className="h-full w-full object-cover"
+            className={cn(mediaClass, "object-cover")}
             muted
             playsInline
             preload="metadata"

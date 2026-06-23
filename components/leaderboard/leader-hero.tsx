@@ -59,7 +59,8 @@ export function LeaderHero({
           <CarThumb
             car={car}
             transform={{ w: 720, h: 540 }}
-            className="h-full w-full rounded-none ring-0 transition-transform duration-700 ease-out group-hover:scale-[1.035] motion-reduce:transform-none"
+            interactive
+            className="h-full w-full rounded-none ring-0"
           />
 
           {/* Cover-line reveal: a magazine "read the feature" affordance that

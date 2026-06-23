@@ -8,13 +8,13 @@ export default function Loading() {
       </div>
 
       {/* Hero skeleton */}
-      <div className="grid border-t-2 border-foreground sm:grid-cols-[1.05fr_1fr]">
+      <div className="grid sm:grid-cols-[1.05fr_1fr]">
         <div className="aspect-[4/3] animate-pulse bg-muted" />
-        <div className="space-y-4 py-7 sm:border-l sm:border-border sm:pl-8">
-          <div className="h-6 w-28 animate-pulse bg-muted" />
+        <div className="flex flex-col justify-center space-y-4 py-6 sm:border-l sm:border-border sm:py-8 sm:pl-8">
+          <div className="h-6 w-20 animate-pulse bg-muted" />
           <div className="h-10 w-3/4 animate-pulse bg-muted" />
-          <div className="h-20 w-40 animate-pulse bg-muted" />
-          <div className="h-1.5 w-full animate-pulse bg-muted" />
+          <div className="h-24 w-48 animate-pulse bg-muted" />
+          <div className="h-3 w-40 animate-pulse bg-muted" />
         </div>
       </div>
 

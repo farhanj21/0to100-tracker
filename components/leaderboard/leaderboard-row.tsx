@@ -51,6 +51,7 @@ export function LeaderboardRow({
         <CarThumb
           car={car}
           transform={{ w: 96, h: 72 }}
+          interactive
           className="aspect-[4/3] w-20 shrink-0 rounded-none bg-secondary ring-1 ring-border sm:w-24"
         />
 

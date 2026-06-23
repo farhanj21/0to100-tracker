@@ -13,7 +13,7 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, cloudinaryThumb } from "@/lib/utils";
 import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
@@ -102,8 +102,8 @@ export function Gallery({
         <MediaTile media={hero} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         {canManage && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-sm bg-primary/90 px-2 py-1 text-xs font-medium text-primary-foreground shadow">
-            <Star className="h-3.5 w-3.5 fill-current" /> Leaderboard thumbnail
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+            <Star className="h-3 w-3 fill-current" /> Leaderboard thumbnail
           </span>
         )}
       </button>
@@ -245,12 +245,15 @@ export function Gallery({
 
 function MediaTile({ media, thumb }: { media: MediaDTO; thumb?: boolean }) {
   if (media.type === "image") {
+    const src = thumb
+      ? cloudinaryThumb(media.path, 120, 120, "fill")
+      : cloudinaryThumb(media.path, 640, 360, "fill");
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={media.path}
+        src={src}
         alt=""
-        className="h-full w-full object-cover"
+        className="h-full w-full object-cover [filter:contrast(1.04)_saturate(1.06)]"
         loading="lazy"
       />
     );
