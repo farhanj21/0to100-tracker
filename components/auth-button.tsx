@@ -40,17 +40,18 @@ export function AuthButton({ authed }: { authed: boolean }) {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon"
       onClick={logout}
       disabled={loading}
       aria-label="Log out"
+      title="Log out"
+      className="h-9 w-9 text-muted-foreground hover:text-foreground"
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <LogOut className="h-4 w-4" />
       )}
-      <span className="hidden sm:inline">Log out</span>
     </Button>
   );
 }

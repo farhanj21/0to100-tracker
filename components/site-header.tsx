@@ -19,16 +19,19 @@ export function SiteHeader() {
           <span className="font-display text-2xl tracking-tight">0–100</span>
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <ThemeToggle />
           <AuthButton authed={authed} />
           {authed && (
-            <Button asChild size="sm">
-              <Link href="/cars/new" aria-label="Add car">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Car</span>
-              </Link>
-            </Button>
+            <>
+              <span className="mx-1.5 h-5 w-px bg-border" aria-hidden />
+              <Button asChild size="sm">
+                <Link href="/cars/new" aria-label="Add car">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Car</span>
+                </Link>
+              </Button>
+            </>
           )}
         </div>
       </div>
