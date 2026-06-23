@@ -119,7 +119,7 @@ function ViewToggle({
     { value: "table", label: "Table", icon: Table2 },
   ];
   return (
-    <div className="inline-flex border border-border bg-card p-0.5">
+    <div className="inline-flex divide-x divide-border border border-border bg-card">
       {options.map((opt) => {
         const active = view === opt.value;
         return (
@@ -129,13 +129,13 @@ function ViewToggle({
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              "inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
               active
-                ? "bg-secondary text-foreground"
+                ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <opt.icon className="h-3.5 w-3.5" />
+            <opt.icon className="h-3 w-3" />
             {opt.label}
           </button>
         );
@@ -146,11 +146,14 @@ function ViewToggle({
 
 function EmptyResults() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
+    <div className="flex flex-col items-center justify-center border border-dashed border-border bg-card py-16 text-center">
       <SearchX className="mb-3 h-8 w-8 text-muted-foreground" />
-      <p className="font-medium">No cars match your filters</p>
-      <p className="text-sm text-muted-foreground">
-        Try widening the year range or clearing filters.
+      <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+        Nothing matches
+      </p>
+      <p className="font-display text-2xl">No cars on this grid</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Widen the year range or clear the filters to see more.
       </p>
     </div>
   );

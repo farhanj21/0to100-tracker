@@ -14,16 +14,16 @@ export function LeaderboardTable({ cars }: { cars: CarDTO[] }) {
     <div className="overflow-x-auto border border-border bg-card">
       <table className="w-full min-w-[720px] text-sm">
         <thead>
-          <tr className="border-b border-border text-left font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="w-14 px-4 py-3 font-medium">#</th>
-            <th className="px-4 py-3 font-medium">Year</th>
-            <th className="px-4 py-3 font-medium">Manufacturer</th>
-            <th className="px-4 py-3 font-medium">Model</th>
-            <th className="px-4 py-3 font-medium">Engine</th>
-            <th className="px-4 py-3 font-medium">Powertrain</th>
-            <th className="px-4 py-3 font-medium">Induction</th>
-            <th className="px-4 py-3 font-medium">Trans.</th>
-            <th className="px-4 py-3 text-right font-medium">0–100</th>
+          <tr className="border-b border-foreground/70 text-left font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <th className="w-14 px-4 py-3 font-normal">#</th>
+            <th className="px-4 py-3 font-normal">Year</th>
+            <th className="px-4 py-3 font-normal">Manufacturer</th>
+            <th className="px-4 py-3 font-normal">Model</th>
+            <th className="px-4 py-3 font-normal">Engine</th>
+            <th className="px-4 py-3 font-normal">Powertrain</th>
+            <th className="px-4 py-3 font-normal">Induction</th>
+            <th className="px-4 py-3 font-normal">Trans.</th>
+            <th className="px-4 py-3 text-right font-normal">0–100</th>
           </tr>
         </thead>
         <tbody>
@@ -31,13 +31,15 @@ export function LeaderboardTable({ cars }: { cars: CarDTO[] }) {
             return (
               <tr
                 key={car.id}
-                className="group border-b border-border/60 transition-colors last:border-0 hover:bg-secondary/40"
+                className="group border-b border-border/60 transition-[background-color,box-shadow] last:border-0 hover:bg-secondary/40 hover:shadow-[inset_3px_0_0_hsl(var(--primary))]"
               >
                 <td className="px-4 py-3">
                   <span
                     className={cn(
-                      "font-mono font-bold tabular-nums",
-                      car.position <= 3 ? "text-primary" : "text-muted-foreground"
+                      "font-mono font-bold tabular-nums transition-colors",
+                      car.position <= 3
+                        ? "text-primary"
+                        : "text-muted-foreground group-hover:text-primary"
                     )}
                   >
                     {String(car.position).padStart(2, "0")}
