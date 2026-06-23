@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Gauge, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { isAuthenticated } from "@/lib/auth";
 
 export function SiteHeader() {
@@ -25,6 +26,7 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-1.5">
+          <ThemeToggle />
           <AuthButton authed={authed} />
           {authed && (
             <Button asChild size="sm">
