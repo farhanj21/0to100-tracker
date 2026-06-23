@@ -60,8 +60,8 @@ export function CarThumb({
           </span>
         </>
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-          <CarIcon className="h-5 w-5" />
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted text-muted-foreground/40">
+          <CarIcon className="h-6 w-6" />
         </div>
       )}
     </div>

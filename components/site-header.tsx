@@ -16,9 +16,7 @@ export function SiteHeader() {
             className="h-5 w-[3px] rounded-full bg-primary transition-transform group-hover:scale-y-110"
             aria-hidden
           />
-          <span className="font-display text-xl font-semibold tracking-tight">
-            0–100
-          </span>
+          <span className="font-display text-2xl tracking-tight">0–100</span>
         </Link>
 
         <div className="flex items-center gap-1.5">

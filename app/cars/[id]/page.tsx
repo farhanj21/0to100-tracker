@@ -18,14 +18,10 @@ import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
 import { RankBadge } from "@/components/leaderboard/rank-badge";
 import { AccelBar } from "@/components/accel-bar";
+import { CountUp } from "@/components/count-up";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  formatTime,
-  formatEngine,
-  carTitle,
-  ordinal,
-} from "@/lib/utils";
+import { formatEngine, carTitle, ordinal } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -103,9 +99,10 @@ export default async function CarDetailPage({
                 0–100 km/h
               </p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-mono text-5xl font-bold tabular-nums text-primary">
-                  {formatTime(car.zeroToHundred)}
-                </span>
+                <CountUp
+                  value={car.zeroToHundred}
+                  className="font-mono text-6xl font-bold tabular-nums tracking-tight text-primary"
+                />
                 <span className="font-mono text-lg text-muted-foreground">s</span>
               </div>
               <AccelBar
@@ -118,7 +115,7 @@ export default async function CarDetailPage({
           </div>
 
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight">
+            <h1 className="font-display text-4xl leading-none tracking-tight sm:text-5xl">
               {car.manufacturer}{" "}
               <span className="text-muted-foreground">
                 {car.carModel}

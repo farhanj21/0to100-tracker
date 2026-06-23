@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
         404
       </p>
-      <h1 className="mt-3 font-display text-3xl font-semibold">Off the track</h1>
+      <h1 className="mt-3 font-display text-4xl">Off the track</h1>
       <p className="mt-2 text-muted-foreground">
         We couldn&apos;t find that car. It may have been deleted.
       </p>

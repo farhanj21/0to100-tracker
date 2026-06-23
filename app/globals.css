@@ -3,68 +3,68 @@
 @tailwind utilities;
 
 @layer base {
-  /* ☀ Light editorial print — warm paper, ink type, one molten accent. */
+  /* ☀ Light — cool paper, true ink, signal-orange used in solid blocks. */
   :root {
-    --background: 38 30% 97%;
-    --foreground: 222 14% 12%;
+    --background: 48 14% 92%;
+    --foreground: 48 14% 7%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 14% 12%;
+    --card: 44 24% 96%;
+    --card-foreground: 48 14% 7%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 14% 12%;
+    --popover: 44 24% 96%;
+    --popover-foreground: 48 14% 7%;
 
-    --primary: 12 86% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 14 100% 50%;
+    --primary-foreground: 30 100% 98%;
 
-    --secondary: 36 18% 92%;
-    --secondary-foreground: 222 14% 16%;
+    --secondary: 44 14% 88%;
+    --secondary-foreground: 48 14% 12%;
 
-    --muted: 36 18% 92%;
-    --muted-foreground: 222 8% 42%;
+    --muted: 44 14% 88%;
+    --muted-foreground: 45 7% 40%;
 
-    --accent: 12 86% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 14 100% 50%;
+    --accent-foreground: 30 100% 98%;
 
-    --destructive: 0 72% 48%;
+    --destructive: 0 72% 46%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 34 16% 86%;
-    --input: 34 16% 84%;
-    --ring: 12 86% 50%;
+    --border: 42 14% 80%;
+    --input: 42 14% 80%;
+    --ring: 14 100% 50%;
 
-    --radius: 0.4rem;
+    --radius: 0.2rem;
   }
 
-  /* ☾ Dark cinematic — warm near-true-black, photos pop, same accent. */
+  /* ☾ Dark — true near-black, cream type, same signal in blocks. */
   .dark {
-    --background: 20 8% 6%;
-    --foreground: 40 18% 92%;
+    --background: 45 13% 6%;
+    --foreground: 44 25% 92%;
 
-    --card: 20 7% 9%;
-    --card-foreground: 40 18% 92%;
+    --card: 44 18% 8%;
+    --card-foreground: 44 25% 92%;
 
-    --popover: 20 8% 8%;
-    --popover-foreground: 40 18% 92%;
+    --popover: 44 18% 8%;
+    --popover-foreground: 44 25% 92%;
 
-    --primary: 14 90% 56%;
-    --primary-foreground: 20 8% 6%;
+    --primary: 13 100% 57%;
+    --primary-foreground: 48 14% 7%;
 
-    --secondary: 24 7% 15%;
-    --secondary-foreground: 40 18% 92%;
+    --secondary: 44 14% 12%;
+    --secondary-foreground: 44 25% 92%;
 
-    --muted: 24 7% 14%;
-    --muted-foreground: 40 6% 60%;
+    --muted: 44 14% 12%;
+    --muted-foreground: 44 8% 52%;
 
-    --accent: 14 90% 56%;
-    --accent-foreground: 20 8% 6%;
+    --accent: 13 100% 57%;
+    --accent-foreground: 48 14% 7%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 6% 17%;
-    --input: 30 6% 17%;
-    --ring: 14 90% 56%;
+    --border: 42 16% 14%;
+    --input: 42 16% 14%;
+    --ring: 13 100% 57%;
   }
 }
 

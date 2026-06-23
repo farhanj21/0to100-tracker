@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SearchX, LayoutList, Table2 } from "lucide-react";
-import { Podium } from "@/components/leaderboard/podium";
+import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import {
@@ -54,12 +54,22 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
     // Note: each car keeps its true global `position` (assigned server-side).
   }, [cars, filters]);
 
+  // The cover hero is always the true global #1; the board lists the rest.
+  const hero = cars[0];
+  const boardCars = filtered.filter((c) => c.id !== hero.id);
+
   return (
-    <div className="space-y-8">
-      {/* Podium always reflects the true global top 3, independent of filters. */}
-      <Podium cars={cars} />
+    <div className="space-y-10">
+      <LeaderHero car={hero} />
 
       <section className="space-y-4">
+        <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
+          <h2 className="font-display text-3xl">The Board</h2>
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            {cars.length - 1} more, quickest first
+          </span>
+        </div>
+
         <Filters
           value={filters}
           onChange={setFilters}
@@ -72,14 +82,14 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           <ViewToggle view={view} onChange={setView} />
         </div>
 
-        {filtered.length === 0 ? (
+        {boardCars.length === 0 ? (
           <EmptyResults />
         ) : view === "table" ? (
-          <LeaderboardTable cars={filtered} />
+          <LeaderboardTable cars={boardCars} />
         ) : (
           <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
-              {filtered.map((car) => (
+              {boardCars.map((car) => (
                 <LeaderboardRow key={car.id} car={car} />
               ))}
             </AnimatePresence>

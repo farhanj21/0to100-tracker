@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Fraunces, Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Serif, Archivo, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
 
-const fraunces = Fraunces({
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
 });
@@ -16,9 +18,9 @@ const archivo = Archivo({
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
+const spaceMono = Space_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
   variable: "--font-mono",
   display: "swap",
 });
@@ -45,7 +47,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${fraunces.variable} ${archivo.variable} ${plexMono.variable} font-sans min-h-screen`}
+        className={`${instrumentSerif.variable} ${archivo.variable} ${spaceMono.variable} font-sans min-h-screen`}
       >
         <SiteHeader />
         <main className="container py-8">{children}</main>

@@ -35,19 +35,18 @@ export default async function HomePage() {
 
 function PageIntro({ count }: { count: number }) {
   return (
-    <div className="border-b border-border pb-6">
-      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+    <div>
+      <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
         Live ranking
-        <span className="text-muted-foreground/60">·</span>
+        <span className="text-muted-foreground/50">·</span>
         <span className="tabular-nums">{count} cars</span>
+        <span className="text-muted-foreground/50">·</span>
+        0–100 km/h
       </div>
-      <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-6xl">
-        The Quickest
+      <h1 className="mt-2 font-display text-6xl leading-[0.92] tracking-tight sm:text-8xl">
+        The <span className="italic">Quickest</span>
       </h1>
-      <p className="mt-2 max-w-xl text-muted-foreground">
-        Every car we track, ordered by its 0–100&nbsp;km/h time. Quickest at the top.
-      </p>
     </div>
   );
 }
@@ -55,7 +54,7 @@ function PageIntro({ count }: { count: number }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center border border-dashed border-border py-20 text-center">
-      <h2 className="font-display text-2xl font-semibold">Nothing on the board yet</h2>
+      <h2 className="font-display text-3xl">Nothing on the board yet</h2>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
         Add the first car to open the ranking, or run{" "}
         <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
