@@ -1,10 +1,11 @@
 export default function Loading() {
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <div className="h-6 w-32 animate-pulse rounded-full bg-muted" />
-        <div className="h-9 w-80 animate-pulse rounded-lg bg-muted" />
-        <div className="h-4 w-96 animate-pulse rounded bg-muted" />
+      {/* Masthead skeleton */}
+      <div className="border-b border-border pb-6">
+        <div className="h-3 w-40 animate-pulse bg-muted" />
+        <div className="mt-3 h-12 w-64 animate-pulse bg-muted" />
+        <div className="mt-2 h-4 w-80 animate-pulse bg-muted" />
       </div>
 
       {/* Podium skeleton */}
@@ -12,17 +13,17 @@ export default function Loading() {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-border bg-card"
+            className="aspect-[16/10] animate-pulse border border-border bg-muted"
           />
         ))}
       </div>
 
       {/* Rows skeleton */}
-      <div className="space-y-2.5">
+      <div className="border-t border-border">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-24 animate-pulse rounded-xl border border-border bg-card"
+            className="h-20 animate-pulse border-b border-border bg-muted/40"
           />
         ))}
       </div>
