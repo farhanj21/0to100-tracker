@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Gauge, Wind, Cog, Fuel } from "lucide-react";
+import { CarThumb } from "@/components/car-thumb";
 import { formatTime, formatEngine, formatGap } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
@@ -32,7 +33,7 @@ export function LeaderboardRow({
     >
       <Link
         href={`/cars/${car.id}`}
-        className="group relative grid grid-cols-[2rem_1fr_auto] items-center gap-3 border-b border-border py-5 pl-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[2.5rem_1fr_5.5rem_auto] sm:gap-6 sm:pl-4"
+        className="group relative grid grid-cols-[1.75rem_auto_1fr_auto] items-center gap-3 border-b border-border py-4 pl-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[2.25rem_auto_1fr_5rem_auto] sm:gap-5 sm:pl-4"
       >
         {/* Hover edge marker */}
         <span
@@ -41,33 +42,47 @@ export function LeaderboardRow({
         />
 
         {/* Rank */}
-        <span className="font-mono text-lg font-bold tabular-nums text-muted-foreground transition-colors group-hover:text-primary sm:text-xl">
+        <span className="font-mono text-base font-bold tabular-nums text-muted-foreground transition-colors group-hover:text-primary sm:text-xl">
           {String(car.position).padStart(2, "0")}
         </span>
 
-        {/* Identity */}
+        {/* Thumbnail */}
+        <CarThumb
+          car={car}
+          className="h-11 w-16 shrink-0 rounded-none ring-1 ring-border sm:h-14 sm:w-20"
+        />
+
+        {/* Identity + specs (icons + readable grotesk, not cramped mono caps) */}
         <div className="min-w-0">
           <h3 className="truncate font-display text-xl leading-none sm:text-2xl">
             {car.manufacturer}{" "}
             <span className="text-muted-foreground">{car.carModel}</span>
           </h3>
-          <p className="mt-1.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission}
-          </p>
-          <p className="mt-1 font-mono text-[11px] tabular-nums text-muted-foreground sm:hidden">
-            {formatGap(gap)} s off lead
-          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs">
+            <span className="tabular-nums">{car.modelYear}</span>
+            <span className="inline-flex items-center gap-1">
+              <Gauge className="h-3 w-3 shrink-0" /> {formatEngine(car.engineSize)}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Wind className="h-3 w-3 shrink-0" /> {car.induction}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Cog className="h-3 w-3 shrink-0" /> {car.transmission}
+            </span>
+            <span className="hidden items-center gap-1 sm:inline-flex">
+              <Fuel className="h-3 w-3 shrink-0" /> {car.powertrainType}
+            </span>
+          </div>
         </div>
 
         {/* Gap to leader (sm+) */}
-        <span className="hidden text-right font-mono text-[13px] tabular-nums text-muted-foreground sm:block">
+        <span className="hidden text-right font-mono text-xs tabular-nums text-muted-foreground sm:block">
           {formatGap(gap)}
           {gap > 0.0001 && <span className="text-[10px]"> s</span>}
         </span>
 
         {/* Time */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-baseline justify-end gap-1">
             <span className="font-mono text-2xl font-bold tabular-nums tracking-tight transition-transform group-hover:-translate-x-0.5 sm:text-3xl">
               {formatTime(car.zeroToHundred)}
