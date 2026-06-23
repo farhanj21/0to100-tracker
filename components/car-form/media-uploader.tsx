@@ -194,7 +194,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           handleFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+          "flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 py-10 text-center transition-colors",
           dragOver
             ? "border-primary bg-primary/5"
             : "border-border hover:border-primary/50 hover:bg-secondary/30"
@@ -209,7 +209,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           {uploading ? "Uploading…" : "Drop images or videos, or click to browse"}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          JPG, PNG, WebP, GIF · MP4, WebM, MOV — images can be cropped before upload
+          JPG, PNG, WebP, GIF · MP4, WebM, MOV. Crop images before they upload.
         </p>
         <input
           ref={inputRef}

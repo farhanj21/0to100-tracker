@@ -65,7 +65,7 @@ export function ExtraSpecsEditor({
 
         {specs.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            None yet — use{" "}
+            Nothing here yet. Use{" "}
             <span className="font-medium text-foreground">Auto-fill from web</span>{" "}
             above, or add rows manually.
           </p>
