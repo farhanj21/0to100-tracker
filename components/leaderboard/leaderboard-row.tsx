@@ -86,7 +86,7 @@ export function LeaderboardRow({
             line up across rows regardless of digit count. */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-baseline justify-end gap-1">
-            <span className="w-[3.4rem] text-right font-mono text-2xl font-bold tabular-nums tracking-tight transition-transform group-hover:-translate-x-0.5 sm:w-[4rem] sm:text-3xl">
+            <span className="w-[5ch] text-right font-mono text-2xl font-bold tabular-nums tracking-tight transition-transform group-hover:-translate-x-0.5 sm:text-3xl">
               {formatTime(car.zeroToHundred)}
             </span>
             <span className="font-mono text-xs text-muted-foreground">s</span>
