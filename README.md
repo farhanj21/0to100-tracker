@@ -21,7 +21,7 @@ ascending by `zeroToHundred` on read.
 ```bash
 npm install
 cp .env.example .env.local      # then edit MONGODB_URI
-npm run seed                    # load the starter grid
+npm run seed                    # load the starter grid (fresh DB only)
 npm run dev                     # http://localhost:3000
 ```
 
@@ -37,7 +37,7 @@ or an Atlas connection string, and add your **Cloudinary** credentials
 | `npm run dev`   | Start the dev server                     |
 | `npm run build` | Production build                         |
 | `npm run start` | Run the production build                 |
-| `npm run seed`  | Clear + reseed the cars collection       |
+| `npm run seed`  | Seed a fresh DB; refuses if cars exist (`-- --force` to wipe) |
 | `npm run lint`  | Lint                                     |
 
 ## Project structure
@@ -60,7 +60,7 @@ lib/
   cars.ts                      ranked reads (.lean, _id → id, computed position)
   storage.ts                   file storage abstraction
   validation.ts                zod schemas
-scripts/seed.ts                idempotent seed
+scripts/seed.ts                fresh-DB seed (guarded; --force to wipe)
 ```
 
 ## Data model

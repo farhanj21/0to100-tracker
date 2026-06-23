@@ -1,10 +1,13 @@
 /**
- * Standalone, idempotent seed script.
+ * Standalone seed script for a FRESH database.
  *
- *   npm run seed
+ *   npm run seed            # safe: aborts if cars already exist
+ *   npm run seed -- --force # destructive: wipes the collection, then reseeds
  *
- * Connects to MONGODB_URI (from .env.local), clears the cars collection, then
- * inserts a starter grid. Re-running always produces the same clean dataset.
+ * Connects to MONGODB_URI (from .env.local). Seeding clears the entire cars
+ * collection before inserting the starter grid, so by default the script
+ * refuses to run when any cars already exist — pass --force (or set
+ * SEED_FORCE=1) to override and wipe. On an empty collection it just seeds.
  *
  * Note: position/rank is never seeded — it is computed at read time by sorting
  * on zeroToHundred. We only provide the raw 0–100 times.
@@ -75,10 +78,29 @@ async function seed() {
     process.exit(1);
   }
 
+  const force =
+    process.argv.includes("--force") || process.env.SEED_FORCE === "1";
+
   console.log("→ Connecting to MongoDB…");
   await mongoose.connect(uri);
 
-  console.log("→ Clearing existing cars…");
+  // Safety guard: seeding wipes the whole collection, so never run against a
+  // populated database unless the caller explicitly opts in with --force.
+  const existing = await Car.countDocuments();
+  if (existing > 0 && !force) {
+    console.error(
+      `\n✗ Refusing to seed: ${existing} car${existing === 1 ? "" : "s"} already in the database.\n` +
+        "  Seeding clears the ENTIRE cars collection first — this would delete them.\n\n" +
+        "  If you really want to wipe everything and reload the 33 sample cars, run:\n" +
+        "    npm run seed -- --force   (or set SEED_FORCE=1)\n"
+    );
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+
+  if (existing > 0) {
+    console.log(`→ --force set: clearing ${existing} existing cars…`);
+  }
   await Car.deleteMany({});
 
   console.log(`→ Inserting ${CARS.length} cars…`);
