@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* ☀ Light — cool paper, true ink, signal-orange used in solid blocks. */
+  /* ☀ Light — cool paper, true ink, editorial cobalt used in solid blocks. */
   :root {
     --background: 48 14% 92%;
     --foreground: 48 14% 7%;
@@ -14,8 +14,8 @@
     --popover: 44 24% 96%;
     --popover-foreground: 48 14% 7%;
 
-    --primary: 14 100% 50%;
-    --primary-foreground: 30 100% 98%;
+    --primary: 223 72% 43%;
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 44 14% 88%;
     --secondary-foreground: 48 14% 12%;
@@ -23,15 +23,15 @@
     --muted: 44 14% 88%;
     --muted-foreground: 45 7% 40%;
 
-    --accent: 14 100% 50%;
-    --accent-foreground: 30 100% 98%;
+    --accent: 223 72% 43%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 72% 46%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 42 14% 80%;
     --input: 42 14% 80%;
-    --ring: 14 100% 50%;
+    --ring: 223 72% 43%;
 
     --radius: 0.2rem;
   }
@@ -47,8 +47,8 @@
     --popover: 36 18% 11%;
     --popover-foreground: 40 28% 91%;
 
-    --primary: 14 100% 58%;
-    --primary-foreground: 48 14% 7%;
+    --primary: 221 78% 62%;
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 36 16% 15%;
     --secondary-foreground: 40 28% 91%;
@@ -56,15 +56,15 @@
     --muted: 36 16% 15%;
     --muted-foreground: 38 11% 56%;
 
-    --accent: 14 100% 58%;
-    --accent-foreground: 48 14% 7%;
+    --accent: 221 78% 62%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 36 18% 17%;
     --input: 36 18% 17%;
-    --ring: 14 100% 58%;
+    --ring: 221 78% 62%;
   }
 }
 

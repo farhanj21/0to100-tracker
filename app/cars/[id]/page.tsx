@@ -203,7 +203,7 @@ export default async function CarDetailPage({
 }
 
 /** Editorial section label: mono caps on a hairline rule, led by a solid
- *  signal-orange tick (the recurring block motif). */
+ *  solid accent tick (the recurring block motif). */
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="mb-4 flex items-center gap-2 border-b border-border pb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground">

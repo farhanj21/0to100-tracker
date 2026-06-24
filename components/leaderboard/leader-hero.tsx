@@ -64,7 +64,7 @@ export function LeaderHero({
           />
 
           {/* Cover-line reveal: a magazine "read the feature" affordance that
-              rises on hover, anchored by the orange tick. */}
+              rises on hover, anchored by the accent tick. */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
