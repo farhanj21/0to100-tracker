@@ -18,6 +18,8 @@ export function LeaderboardTable({
   selectedIds = [],
   maxReached = false,
   onToggleSelect,
+  hoveredId,
+  onHover,
 }: {
   cars: CarDTO[];
   selectable?: boolean;
@@ -25,6 +27,8 @@ export function LeaderboardTable({
   /** Selection cap reached — unselected checkboxes are disabled. */
   maxReached?: boolean;
   onToggleSelect?: (id: string) => void;
+  hoveredId?: string | null;
+  onHover?: (id: string | null) => void;
 }) {
   return (
     <div className="overflow-x-auto border border-border bg-card">
@@ -46,12 +50,16 @@ export function LeaderboardTable({
         <tbody>
           {cars.map((car) => {
             const selected = selectedIds.includes(car.id);
+            const isHovered = hoveredId === car.id;
             return (
               <tr
                 key={car.id}
+                onMouseEnter={() => onHover?.(car.id)}
+                onMouseLeave={() => onHover?.(null)}
                 className={cn(
                   "group border-b border-border/60 transition-[background-color,box-shadow] last:border-0 hover:bg-secondary/40 hover:shadow-[inset_3px_0_0_hsl(var(--primary))]",
-                  selected && "bg-primary/5 shadow-[inset_3px_0_0_hsl(var(--primary))]"
+                  selected && "bg-primary/5 shadow-[inset_3px_0_0_hsl(var(--primary))]",
+                  isHovered && "bg-secondary/40 shadow-[inset_3px_0_0_hsl(var(--primary))]"
                 )}
               >
                 {selectable && (
@@ -70,7 +78,7 @@ export function LeaderboardTable({
                   <span
                     className={cn(
                       "font-mono font-bold tabular-nums transition-colors",
-                      car.position <= 3
+                      car.position <= 3 || isHovered
                         ? "text-primary"
                         : "text-muted-foreground group-hover:text-primary"
                     )}
