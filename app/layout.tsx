@@ -26,7 +26,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "0–100 · Acceleration board",
+  title: "0–100 · Acceleration Board",
   description:
     "A live ranking of cars by their 0–100 km/h time, quickest first.",
 };
