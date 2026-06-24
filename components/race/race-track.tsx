@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { Flag, RotateCcw, Trophy, BarChart2, AlignLeft } from "lucide-react";
+import {
+  Flag,
+  RotateCcw,
+  Trophy,
+  BarChart2,
+  AlignLeft,
+  ListChecks,
+  Check,
+} from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, carTitle } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
@@ -76,8 +84,20 @@ export function RaceTrack({
   // "Race all" can be experienced two ways; the graph leads since it conveys
   // speed best, but the dense lanes give the familiar side-by-side dot race.
   const [graphView, setGraphView] = useState(true);
+  // "Race all" only: ids the user has unchecked, so they sit out the race.
+  const [excluded, setExcluded] = useState<Set<string>>(() => new Set());
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  const times = useMemo(() => cars.map((c) => c.zeroToHundred), [cars]);
+  // The cars actually on the grid. In "Race all" the picker can drop some;
+  // otherwise it's the full passed-in set.
+  const racedCars = useMemo(
+    () => (minimal ? cars.filter((c) => !excluded.has(c.id)) : cars),
+    [cars, excluded, minimal]
+  );
+  // Identity of the current grid — toggling a car restarts the run (see effect).
+  const racedKey = useMemo(() => racedCars.map((c) => c.id).join(","), [racedCars]);
+
+  const times = useMemo(() => racedCars.map((c) => c.zeroToHundred), [racedCars]);
   const slowest = useMemo(() => Math.max(...times), [times]);
   // The quickest car (lowest time) reaches the finish first — the winner.
   const winnerIdx = useMemo(() => {
@@ -86,13 +106,31 @@ export function RaceTrack({
     return best;
   }, [times]);
 
+  const toggleCar = (id: string) =>
+    setExcluded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const selectAll = () => setExcluded(new Set());
+  const selectNone = () => setExcluded(new Set(cars.map((c) => c.id)));
+
   // The run itself. Re-runs whenever runId changes (Replay) or motion pref flips.
   useEffect(() => {
     if (runId === 0) return; // don't auto-play on mount; wait for Start/Replay
 
+    if (racedCars.length === 0) {
+      // Nothing selected — clear the grid and idle.
+      setProgress([]);
+      setElapsed(0);
+      setPhase("idle");
+      return;
+    }
+
     if (reduce) {
       // Snap everything to the finish — no animation, but the result is shown.
-      setProgress(cars.map(() => 1));
+      setProgress(racedCars.map(() => 1));
       setElapsed(slowest);
       setPhase("done");
       return;
@@ -100,6 +138,8 @@ export function RaceTrack({
 
     let raf = 0;
     let start = 0;
+    setProgress(racedCars.map(() => 0));
+    setElapsed(0);
     setPhase("running");
 
     const tick = (now: number) => {
@@ -116,13 +156,13 @@ export function RaceTrack({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // cars/times/slowest are stable for a given id set; runId drives re-runs.
-  }, [runId, reduce]); // eslint-disable-line react-hooks/exhaustive-deps
+    // racedKey makes toggling a car restart the run with the new grid.
+  }, [runId, reduce, racedKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const single = cars.length === 1;
+  const single = racedCars.length === 1;
 
   const title = minimal
-    ? `The Race · ${cars.length} cars`
+    ? `The Race · ${racedCars.length} cars`
     : single
       ? "0–100 visualized"
       : "The Race";
@@ -132,7 +172,23 @@ export function RaceTrack({
       {/* Header: title + live clock + controls */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-2">
         <h2 className="font-display text-3xl">{title}</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {minimal && (
+            <button
+              type="button"
+              onClick={() => setPickerOpen((o) => !o)}
+              aria-pressed={pickerOpen}
+              className={cn(
+                "inline-flex items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+                pickerOpen
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <ListChecks className="h-3 w-3" />
+              Cars {racedCars.length}/{cars.length}
+            </button>
+          )}
           {minimal && (
             <RaceViewToggle graph={graphView} onChange={setGraphView} />
           )}
@@ -157,17 +213,37 @@ export function RaceTrack({
         </div>
       </div>
 
+      {minimal && pickerOpen && (
+        <CarPicker
+          cars={cars}
+          excluded={excluded}
+          onToggle={toggleCar}
+          onAll={selectAll}
+          onNone={selectNone}
+        />
+      )}
+
       {minimal ? (
-        graphView ? (
+        racedCars.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-1 border border-dashed border-border bg-card py-16 text-center">
+            <ListChecks className="mb-1 h-6 w-6 text-muted-foreground" />
+            <p className="font-display text-xl">No cars selected</p>
+            <p className="text-sm text-muted-foreground">
+              Open{" "}
+              <span className="font-medium text-foreground">Cars</span> and pick at
+              least one to race.
+            </p>
+          </div>
+        ) : graphView ? (
           <RaceGraph
-            cars={cars}
+            cars={racedCars}
             times={times}
             progress={progress}
             winnerIdx={winnerIdx}
           />
         ) : (
           <RaceLanesMini
-            cars={cars}
+            cars={racedCars}
             times={times}
             progress={progress}
             winnerIdx={winnerIdx}
@@ -177,7 +253,7 @@ export function RaceTrack({
         )
       ) : (
         <Lanes
-          cars={cars}
+          cars={racedCars}
           times={times}
           progress={progress}
           phase={phase}
@@ -381,6 +457,85 @@ function RaceViewToggle({
   );
 }
 
+/** Checklist of every car in the field — toggle which ones are on the grid. */
+function CarPicker({
+  cars,
+  excluded,
+  onToggle,
+  onAll,
+  onNone,
+}: {
+  cars: CarDTO[];
+  excluded: Set<string>;
+  onToggle: (id: string) => void;
+  onAll: () => void;
+  onNone: () => void;
+}) {
+  const active = cars.length - excluded.size;
+  return (
+    <div className="space-y-2 border border-border bg-card p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          {active} of {cars.length} racing
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onAll}
+            className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+          >
+            All
+          </button>
+          <span aria-hidden className="text-border">
+            |
+          </span>
+          <button
+            type="button"
+            onClick={onNone}
+            className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+          >
+            None
+          </button>
+        </div>
+      </div>
+      <div className="max-h-60 divide-y divide-border/60 overflow-y-auto border-y border-border/60">
+        {cars.map((car) => {
+          const on = !excluded.has(car.id);
+          return (
+            <button
+              key={car.id}
+              type="button"
+              onClick={() => onToggle(car.id)}
+              aria-pressed={on}
+              className={cn(
+                "flex w-full items-center gap-2.5 px-1.5 py-1.5 text-left text-sm transition-colors hover:bg-secondary/40",
+                !on && "opacity-55"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-4 w-4 shrink-0 items-center justify-center border",
+                  on
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border"
+                )}
+              >
+                {on && <Check className="h-3 w-3" />}
+              </span>
+              <span className={cn("min-w-0 flex-1 truncate", on && "font-medium")}>
+                {carTitle(car)}
+              </span>
+              <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                {formatTime(car.zeroToHundred)}s
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Dense lanes — horizontal dot race for the whole "Race all" field    */
 /* ------------------------------------------------------------------ */
@@ -546,7 +701,6 @@ function Lanes({
                 <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
                 <div className="absolute bottom-0 left-0 top-0 w-px bg-border" />
                 <div className="absolute bottom-0 right-0 top-0 flex w-px items-center bg-foreground">
-                  <Flag className="absolute -right-0.5 -top-3 h-3.5 w-3.5 text-foreground" />
                 </div>
                 <div
                   className={cn(
