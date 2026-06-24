@@ -46,7 +46,7 @@ export function LeaderHero({
       transition={{ duration: 0.4 }}
     >
       <Link
-        href={`/cars/${car.id}`}
+        href={`/cars/${car.slug}`}
         className="group grid sm:grid-cols-[1.05fr_1fr]"
       >
         {/* Photo */}

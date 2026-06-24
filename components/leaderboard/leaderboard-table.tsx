@@ -91,7 +91,7 @@ export function LeaderboardTable({
                 </td>
                 <td className="px-4 py-3 font-medium">
                   <Link
-                    href={`/cars/${car.id}`}
+                    href={`/cars/${car.slug}`}
                     className="hover:text-primary"
                   >
                     {car.manufacturer}
@@ -99,7 +99,7 @@ export function LeaderboardTable({
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   <Link
-                    href={`/cars/${car.id}`}
+                    href={`/cars/${car.slug}`}
                     className="hover:text-primary"
                   >
                     {car.carModel}

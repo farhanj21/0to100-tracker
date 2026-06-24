@@ -209,7 +209,7 @@ function KeyFigures({ stats }: { stats: LeaderboardStats }) {
 function RecordCell({ label, car }: { label: string; car: CarDTO }) {
   return (
     <Link
-      href={`/cars/${car.id}`}
+      href={`/cars/${car.slug}`}
       className="group block bg-background p-4 transition-colors hover:bg-secondary/40"
     >
       <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

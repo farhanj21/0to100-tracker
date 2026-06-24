@@ -22,6 +22,8 @@ export interface SpecPair {
  */
 export interface CarDTO {
   id: string;
+  /** Readable URL slug (year-make-model), derived in getRankedCars — never stored. */
+  slug: string;
   modelYear: number;
   manufacturer: string;
   carModel: string;

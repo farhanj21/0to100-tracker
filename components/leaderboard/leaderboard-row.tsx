@@ -154,7 +154,7 @@ export function LeaderboardRow({
         </button>
       ) : (
         <Link
-          href={`/cars/${car.id}`}
+          href={`/cars/${car.slug}`}
           onMouseEnter={() => onHover?.(car.id)}
           onMouseLeave={() => onHover?.(null)}
           className={wrapperClass}

@@ -74,7 +74,7 @@ export function CompareView({
                 className="border-l border-border p-4 align-top"
                 style={{ width: `${80 / cars.length}%` }}
               >
-                <Link href={`/cars/${car.id}`} className="group block text-left">
+                <Link href={`/cars/${car.slug}`} className="group block text-left">
                   <CarThumb
                     car={car}
                     transform={{ w: 320, h: 200 }}

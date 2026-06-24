@@ -20,6 +20,7 @@ const HOVER_RADIUS = 6.5;
 
 interface PlotNode extends SimulationNodeDatum {
   id: string;
+  slug: string;
   time: number;
   title: string;
 }
@@ -65,6 +66,7 @@ export function DistributionPlot({
     const cy = HEIGHT / 2;
     const data: PlotNode[] = cars.map((c) => ({
       id: c.id,
+      slug: c.slug,
       time: c.zeroToHundred,
       title: carTitle(c),
       x: x(c.zeroToHundred),
@@ -80,6 +82,7 @@ export function DistributionPlot({
       .tick(220);
     return data.map((d) => ({
       id: d.id,
+      slug: d.slug,
       time: d.time,
       title: d.title,
       x: d.x ?? 0,
@@ -184,7 +187,7 @@ export function DistributionPlot({
                   e.clientY,
                   e.currentTarget.getBoundingClientRect()
                 );
-                if (n) router.push(`/cars/${n.id}`);
+                if (n) router.push(`/cars/${n.slug}`);
               }}
             />
           )}

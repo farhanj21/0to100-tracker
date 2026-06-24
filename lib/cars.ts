@@ -1,6 +1,7 @@
 import "server-only";
 import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
+import { carSlug } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
 /**
@@ -25,8 +26,8 @@ type LeanCar = {
   updatedAt: Date;
 };
 
-/** Convert a lean Mongoose doc into a client-safe DTO (without position). */
-function toDTO(doc: LeanCar): Omit<CarDTO, "position"> {
+/** Convert a lean Mongoose doc into a client-safe DTO (position + slug added later). */
+function toDTO(doc: LeanCar): Omit<CarDTO, "position" | "slug"> {
   return {
     id: String(doc._id),
     modelYear: doc.modelYear,
@@ -58,16 +59,42 @@ export async function getRankedCars(): Promise<CarDTO[]> {
     .sort({ zeroToHundred: 1, manufacturer: 1, carModel: 1 })
     .lean<LeanCar[]>();
 
-  return docs.map((doc, index) => ({
+  const base = docs.map((doc, index) => ({
     ...toDTO(doc),
     position: index + 1,
   }));
+
+  // Assign readable slugs (year-make-model). If two cars produce the same slug,
+  // disambiguate every colliding one with a short id suffix so links stay unique.
+  const slugCounts = new Map<string, number>();
+  for (const car of base) {
+    const s = carSlug(car);
+    slugCounts.set(s, (slugCounts.get(s) ?? 0) + 1);
+  }
+  return base.map((car) => {
+    const s = carSlug(car);
+    const slug = (slugCounts.get(s) ?? 0) > 1 ? `${s}-${car.id.slice(-6)}` : s;
+    return { ...car, slug };
+  });
 }
 
 /** Fetch a single car with its true global position, or null if not found. */
 export async function getCarById(id: string): Promise<CarDTO | null> {
   const ranked = await getRankedCars();
   return ranked.find((car) => car.id === id) ?? null;
+}
+
+/**
+ * Resolve a car by its readable slug, falling back to a raw id for backward
+ * compatibility with old bookmarked/shared id URLs. Returns null if not found.
+ */
+export async function getCarBySlug(slugOrId: string): Promise<CarDTO | null> {
+  const ranked = await getRankedCars();
+  return (
+    ranked.find((car) => car.slug === slugOrId) ??
+    ranked.find((car) => car.id === slugOrId) ??
+    null
+  );
 }
 
 /** Total number of cars on the board (for "X of Y" rank displays). */

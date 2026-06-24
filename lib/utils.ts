@@ -25,6 +25,34 @@ export function carTitle(car: {
   return `${car.modelYear} ${car.manufacturer} ${car.carModel}`;
 }
 
+/** Turn a label into a URL-safe slug: "2022 Ferrari 488 Pista" -> "2022-ferrari-488-pista". */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "") // strip accents (é -> e)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // any run of non-alphanumerics -> single dash
+    .replace(/^-+|-+$/g, ""); // trim leading/trailing dashes
+}
+
+/**
+ * Readable slug for a car — year, make, model, then variant if present. Used in
+ * shareable URLs in place of the opaque Mongo id. Collisions (same slug for two
+ * cars) are disambiguated downstream in `getRankedCars`.
+ */
+export function carSlug(car: {
+  modelYear: number;
+  manufacturer: string;
+  carModel: string;
+  variant?: string;
+}): string {
+  return slugify(
+    [car.modelYear, car.manufacturer, car.carModel, car.variant]
+      .filter(Boolean)
+      .join(" ")
+  );
+}
+
 /** Ordinal suffix: 1 -> "1st", 2 -> "2nd", 3 -> "3rd", 11 -> "11th". */
 export function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];

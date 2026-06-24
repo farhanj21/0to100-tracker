@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCarById } from "@/lib/cars";
+import { getCarBySlug } from "@/lib/cars";
 import { CarForm } from "@/components/car-form/car-form";
 import { carTitle } from "@/lib/utils";
 import { isAuthenticated } from "@/lib/auth";
@@ -17,8 +17,10 @@ export default async function EditCarPage({
 }) {
   if (!isAuthenticated()) redirect(`/login?next=/cars/${params.id}/edit`);
 
-  const car = await getCarById(params.id);
+  const car = await getCarBySlug(params.id);
   if (!car) notFound();
+  // Canonicalise: an old id URL redirects to the readable slug.
+  if (car.slug !== params.id) redirect(`/cars/${car.slug}/edit`);
 
   const defaults: Partial<CarInput> = {
     modelYear: car.modelYear,
@@ -39,7 +41,7 @@ export default async function EditCarPage({
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <Link
-          href={`/cars/${car.id}`}
+          href={`/cars/${car.slug}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back to car

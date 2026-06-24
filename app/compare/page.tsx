@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: { ids?: string };
+  searchParams: { cars?: string };
 }) {
   const requested = Array.from(
     new Set(
-      (searchParams.ids ?? "")
+      (searchParams.cars ?? "")
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
@@ -30,9 +30,11 @@ export default async function ComparePage({
   ).slice(0, MAX_COMPARE);
 
   const ranked = await getRankedCars();
+  const bySlug = new Map(ranked.map((c) => [c.slug, c]));
   const byId = new Map(ranked.map((c) => [c.id, c]));
+  // Accept slugs (canonical) and fall back to raw ids for old links.
   const cars = requested
-    .map((id) => byId.get(id))
+    .map((key) => bySlug.get(key) ?? byId.get(key))
     .filter(Boolean) as CarDTO[];
 
   return (
@@ -46,7 +48,7 @@ export default async function ComparePage({
         </Link>
         {cars.length >= 1 && (
           <Link
-            href={`/race?ids=${cars.map((c) => c.id).join(",")}`}
+            href={`/race?cars=${cars.map((c) => c.slug).join(",")}`}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <Flag className="h-4 w-4" /> Race these cars

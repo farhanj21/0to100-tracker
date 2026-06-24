@@ -71,7 +71,7 @@ export function Breakdown({
             </div>
 
             <Link
-              href={`/cars/${r.quickest.id}`}
+              href={`/cars/${r.quickest.slug}`}
               className="group w-24 shrink-0 text-right"
             >
               <span

@@ -116,20 +116,20 @@ export function Leaderboard({
   }
 
   function goCompare() {
-    if (selectedIds.length < 2) return;
-    router.push(`/compare?ids=${selectedIds.join(",")}`);
+    if (selectedCars.length < 2) return;
+    router.push(`/compare?cars=${selectedCars.map((c) => c.slug).join(",")}`);
   }
 
   function goRace() {
-    if (selectedIds.length < 1) return;
-    router.push(`/race?ids=${selectedIds.join(",")}`);
+    if (selectedCars.length < 1) return;
+    router.push(`/race?cars=${selectedCars.map((c) => c.slug).join(",")}`);
   }
 
   function goRaceAll() {
-    if (boardCars.length === 0) return;
-    // Race the currently visible board (respects filters), in the dense layout.
-    const ids = boardCars.map((c) => c.id).join(",");
-    router.push(`/race?ids=${ids}&minimal=1`);
+    if (cars.length === 0) return;
+    // Race the whole field in the dense layout — a clean `all=1` URL beats
+    // serialising every id into the query string.
+    router.push(`/race?all=1`);
   }
 
   return (
@@ -181,7 +181,7 @@ export function Leaderboard({
             <button
               type="button"
               onClick={goRaceAll}
-              disabled={boardCars.length === 0}
+              disabled={cars.length === 0}
               title="Race every car on the board"
               className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >

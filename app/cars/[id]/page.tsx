@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   ArrowLeft,
@@ -13,7 +13,7 @@ import {
   Check,
   Flag,
 } from "lucide-react";
-import { getCarById, getRankedCars } from "@/lib/cars";
+import { getCarBySlug, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
@@ -28,7 +28,7 @@ export async function generateMetadata({
 }: {
   params: { id: string };
 }): Promise<Metadata> {
-  const car = await getCarById(params.id);
+  const car = await getCarBySlug(params.id);
   if (!car) return { title: "Car not found · 0–100" };
   return { title: `${carTitle(car)} · 0–100` };
 }
@@ -39,8 +39,12 @@ export default async function CarDetailPage({
   params: { id: string };
 }) {
   const ranked = await getRankedCars();
-  const car = ranked.find((c) => c.id === params.id);
+  const car =
+    ranked.find((c) => c.slug === params.id) ??
+    ranked.find((c) => c.id === params.id);
   if (!car) notFound();
+  // Canonicalise: reaching this page via an old/raw id redirects to the slug.
+  if (car.slug !== params.id) redirect(`/cars/${car.slug}`);
 
   const total = ranked.length;
   const leaderTime = ranked[0]?.zeroToHundred ?? car.zeroToHundred;
@@ -74,7 +78,7 @@ export default async function CarDetailPage({
         {authed && (
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link href={`/cars/${car.id}/edit`}>
+              <Link href={`/cars/${car.slug}/edit`}>
                 <Pencil className="h-4 w-4" /> Edit
               </Link>
             </Button>
@@ -145,7 +149,7 @@ export default async function CarDetailPage({
             </p>
 
             <Button asChild variant="outline" size="sm" className="mt-6 self-start">
-              <Link href={`/race?ids=${car.id}`}>
+              <Link href={`/race?cars=${car.slug}`}>
                 <Flag className="h-4 w-4" /> Visualize 0–100
               </Link>
             </Button>

@@ -20,23 +20,32 @@ export const metadata: Metadata = {
 export default async function RacePage({
   searchParams,
 }: {
-  searchParams: { ids?: string; minimal?: string };
+  searchParams: { cars?: string; all?: string };
 }) {
-  const minimal = searchParams.minimal === "1";
-  const requested = Array.from(
-    new Set(
-      (searchParams.ids ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    )
-  ).slice(0, minimal ? MAX_RACE_ALL : MAX_RACE);
-
+  // `?all=1` races the whole field in the dense layout — keeps the URL short
+  // instead of listing every car. Otherwise `?cars=a,b,c` races a picked set.
+  const all = searchParams.all === "1";
   const ranked = await getRankedCars();
-  const byId = new Map(ranked.map((c) => [c.id, c]));
-  const cars = requested
-    .map((id) => byId.get(id))
-    .filter(Boolean) as CarDTO[];
+
+  let cars: CarDTO[];
+  if (all) {
+    cars = ranked.slice(0, MAX_RACE_ALL);
+  } else {
+    const requested = Array.from(
+      new Set(
+        (searchParams.cars ?? "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+    ).slice(0, MAX_RACE);
+    const bySlug = new Map(ranked.map((c) => [c.slug, c]));
+    const byId = new Map(ranked.map((c) => [c.id, c]));
+    // Accept slugs (canonical) and fall back to raw ids for old links.
+    cars = requested
+      .map((key) => bySlug.get(key) ?? byId.get(key))
+      .filter(Boolean) as CarDTO[];
+  }
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -47,9 +56,9 @@ export default async function RacePage({
         >
           <ArrowLeft className="h-4 w-4" /> Leaderboard
         </Link>
-        {!minimal && cars.length >= 2 && (
+        {!all && cars.length >= 2 && (
           <Link
-            href={`/compare?ids=${cars.map((c) => c.id).join(",")}`}
+            href={`/compare?cars=${cars.map((c) => c.slug).join(",")}`}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <GitCompareArrows className="h-4 w-4" /> Compare these
@@ -69,7 +78,7 @@ export default async function RacePage({
       {cars.length < 1 ? (
         <Nothing />
       ) : (
-        <RaceTrack cars={cars} minimal={minimal} />
+        <RaceTrack cars={cars} minimal={all} />
       )}
     </div>
   );
