@@ -194,15 +194,15 @@ export function RaceTrack({
     <div className="space-y-5">
       {/* Header: title + live clock + controls */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-2">
-        <h2 className="font-display text-2xl sm:text-3xl">{title}</h2>
-        <div className="flex flex-wrap items-center gap-3">
+        <h2 className="hidden font-display text-2xl sm:block sm:text-3xl">{title}</h2>
+        <div className="flex items-center gap-2 sm:gap-3">
           {minimal && (
             <button
               type="button"
               onClick={() => setPickerOpen((o) => !o)}
               aria-pressed={pickerOpen}
               className={cn(
-                "inline-flex items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+                "inline-flex shrink-0 items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
                 pickerOpen
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -221,7 +221,7 @@ export function RaceTrack({
           <button
             type="button"
             onClick={() => setRunId((n) => n + 1)}
-            className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex shrink-0 items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
           >
             {phase !== "idle" ? (
               <>
@@ -456,7 +456,7 @@ function RaceViewToggle({
     { graph: false, label: "Lanes", icon: AlignLeft },
   ];
   return (
-    <div className="inline-flex divide-x divide-border border border-border bg-card">
+    <div className="inline-flex shrink-0 divide-x divide-border border border-border bg-card">
       {options.map((opt) => {
         const active = graph === opt.graph;
         return (
@@ -465,6 +465,7 @@ function RaceViewToggle({
             type="button"
             onClick={() => onChange(opt.graph)}
             aria-pressed={active}
+            title={opt.label}
             className={cn(
               "inline-flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
               active
@@ -472,8 +473,8 @@ function RaceViewToggle({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <opt.icon className="h-3 w-3" />
-            {opt.label}
+            <opt.icon className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+            <span className="hidden sm:inline">{opt.label}</span>
           </button>
         );
       })}
