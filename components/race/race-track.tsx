@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { Flag, RotateCcw, Trophy, BarChart2, AlignLeft } from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
@@ -48,8 +48,23 @@ export function RaceTrack({
   minimal?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const trackRef = useRef<HTMLDivElement>(null);
+  const roRef = useRef<ResizeObserver | null>(null);
   const [trackWidth, setTrackWidth] = useState(0);
+
+  // Callback ref so the observer (re)attaches whenever the measured track
+  // mounts. This matters when toggling into the Lanes view: that element
+  // doesn't exist until the user switches to it, so a mount-only effect would
+  // never measure it and the dots would sit at travel = 0.
+  const measureRef = useCallback((el: HTMLDivElement | null) => {
+    roRef.current?.disconnect();
+    if (!el) return;
+    setTrackWidth(el.getBoundingClientRect().width);
+    const ro = new ResizeObserver(([entry]) => {
+      setTrackWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    roRef.current = ro;
+  }, []);
 
   // 0→1 per lane, plus a shared elapsed clock (seconds). Driven by one rAF loop.
   const [progress, setProgress] = useState<number[]>(() => cars.map(() => 0));
@@ -70,19 +85,6 @@ export function RaceTrack({
     for (let i = 1; i < times.length; i++) if (times[i] < times[best]) best = i;
     return best;
   }, [times]);
-
-  // Responsive track width for the horizontal lanes (graph mode uses CSS % and
-  // doesn't need it). Measured on the first lane's track — all lanes match.
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      setTrackWidth(entry.contentRect.width);
-    });
-    ro.observe(el);
-    setTrackWidth(el.getBoundingClientRect().width);
-    return () => ro.disconnect();
-  }, []);
 
   // The run itself. Re-runs whenever runId changes (Replay) or motion pref flips.
   useEffect(() => {
@@ -170,7 +172,7 @@ export function RaceTrack({
             progress={progress}
             winnerIdx={winnerIdx}
             trackWidth={trackWidth}
-            trackRef={trackRef}
+            measureRef={measureRef}
           />
         )
       ) : (
@@ -182,7 +184,7 @@ export function RaceTrack({
           single={single}
           winnerIdx={winnerIdx}
           trackWidth={trackWidth}
-          trackRef={trackRef}
+          measureRef={measureRef}
         />
       )}
     </div>
@@ -389,14 +391,14 @@ function RaceLanesMini({
   progress,
   winnerIdx,
   trackWidth,
-  trackRef,
+  measureRef,
 }: {
   cars: CarDTO[];
   times: number[];
   progress: number[];
   winnerIdx: number;
   trackWidth: number;
-  trackRef: React.RefObject<HTMLDivElement>;
+  measureRef: (el: HTMLDivElement | null) => void;
 }) {
   const DOT = 13;
   const travel = Math.max(0, trackWidth - DOT);
@@ -432,7 +434,7 @@ function RaceLanesMini({
 
               {/* Track */}
               <div
-                ref={i === 0 ? trackRef : undefined}
+                ref={i === 0 ? measureRef : undefined}
                 className="relative h-6"
               >
                 <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
@@ -477,7 +479,7 @@ function Lanes({
   single,
   winnerIdx,
   trackWidth,
-  trackRef,
+  measureRef,
 }: {
   cars: CarDTO[];
   times: number[];
@@ -486,7 +488,7 @@ function Lanes({
   single: boolean;
   winnerIdx: number;
   trackWidth: number;
-  trackRef: React.RefObject<HTMLDivElement>;
+  measureRef: (el: HTMLDivElement | null) => void;
 }) {
   const DOT = 18;
   const travel = Math.max(0, trackWidth - DOT);
@@ -538,7 +540,7 @@ function Lanes({
 
               {/* Track */}
               <div
-                ref={i === 0 ? trackRef : undefined}
+                ref={i === 0 ? measureRef : undefined}
                 className="relative h-9"
               >
                 <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
