@@ -162,31 +162,32 @@ export function Leaderboard({
           onHover={setHoveredId}
         />
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={toggleCompareMode}
               aria-pressed={compareMode}
+              title={compareMode ? "Comparing" : "Compare"}
               className={cn(
-                "inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+                "inline-flex items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors sm:px-3",
                 compareMode
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               )}
             >
-              <GitCompareArrows className="h-3 w-3" />
-              {compareMode ? "Comparing" : "Compare"}
+              <GitCompareArrows className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+              <span>{compareMode ? "Comparing" : "Compare"}</span>
             </button>
             <button
               type="button"
               onClick={goRaceAll}
               disabled={cars.length === 0}
               title="Race every car on the board"
-              className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 border border-border bg-card px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50 sm:px-3"
             >
-              <Flag className="h-3 w-3" />
-              Race all
+              <Flag className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+              <span>Race all</span>
             </button>
           </div>
           <ViewToggle view={view} onChange={setView} />
@@ -346,15 +347,16 @@ function ViewToggle({
             type="button"
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
+            title={opt.label}
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+              "inline-flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors sm:px-3",
               active
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <opt.icon className="h-3 w-3" />
-            {opt.label}
+            <opt.icon className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+            <span className="hidden sm:inline">{opt.label}</span>
           </button>
         );
       })}

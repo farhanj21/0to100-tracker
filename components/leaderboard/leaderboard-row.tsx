@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ChevronRight, Gauge, Wind, Cog, Fuel, Check } from "lucide-react";
+import { Gauge, Wind, Cog, Fuel, Check } from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, formatEngine, formatGap } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
@@ -33,8 +33,9 @@ export function LeaderboardRow({
   const reduce = useReducedMotion();
 
   const wrapperClass = cn(
-    "group relative grid grid-cols-[1.75rem_auto_1fr_auto] items-center gap-3 border-b border-border py-4 pl-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[2.25rem_auto_1fr_5rem_auto] sm:gap-5 sm:pl-4",
-    selectable && "w-full text-left",
+    "group relative grid grid-cols-[1.75rem_auto_1fr_auto] items-center gap-3 border-b border-border py-4 px-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[2.25rem_auto_1fr_5rem_auto] sm:gap-5 sm:px-4",
+    selectable &&
+      "w-full text-left focus:outline-none focus-visible:bg-secondary/40",
     selected && "bg-primary/5",
     hovered && "bg-secondary/40",
     disabled && "cursor-not-allowed opacity-45"
@@ -47,7 +48,9 @@ export function LeaderboardRow({
         aria-hidden
         className={cn(
           "absolute left-0 top-0 h-full w-[3px] origin-top bg-primary transition-transform duration-300 ease-out",
-          selected || hovered ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
+          selected || hovered
+            ? "scale-y-100"
+            : "scale-y-0 group-hover:scale-y-100 group-focus-visible:scale-y-100"
         )}
       />
 
@@ -111,7 +114,7 @@ export function LeaderboardRow({
           </span>
           <span className="font-mono text-xs text-muted-foreground">s</span>
         </div>
-        {selectable ? (
+        {selectable && (
           <span
             aria-hidden
             className={cn(
@@ -123,8 +126,6 @@ export function LeaderboardRow({
           >
             <Check className="h-3.5 w-3.5" />
           </span>
-        ) : (
-          <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
         )}
       </div>
     </>

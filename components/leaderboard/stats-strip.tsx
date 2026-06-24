@@ -32,7 +32,7 @@ export function StatsStrip({ stats }: { stats: LeaderboardStats }) {
 
       <div className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
         {cells.map((c) => (
-          <div key={c.label}>
+          <div key={c.label} className="text-center sm:text-left">
             <div className="font-mono text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">
               {c.value}
               <span className="ml-0.5 text-base font-normal text-muted-foreground">
@@ -46,7 +46,7 @@ export function StatsStrip({ stats }: { stats: LeaderboardStats }) {
         ))}
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-x-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="mt-6 flex flex-wrap justify-center gap-x-2 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground sm:justify-start sm:text-left">
         {stats.powertrains.map((p, i) => (
           <span key={p.type}>
             {i > 0 && <span className="mr-2 text-muted-foreground/40">·</span>}
