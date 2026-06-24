@@ -1,6 +1,7 @@
 import { Car as CarIcon, Play } from "lucide-react";
 import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
 import { youTubeThumb } from "@/lib/youtube";
+import { BlurUpImage } from "@/components/blur-up-image";
 import type { CarDTO } from "@/lib/types";
 
 /**
@@ -38,11 +39,16 @@ export function CarThumb({
           fit === "contain" ? "fit" : "fill"
         )
       : primary?.path;
-  // When fitting (no crop), a blurred copy fills the box so portrait/odd
-  // ratios don't leave flat bars.
+  // A tiny blurred copy, cropped to the display aspect: it shows instantly as
+  // a load placeholder and — for `contain` — also fills the letterbox bars so
+  // portrait/odd ratios don't leave flat edges.
   const blurSrc =
-    primary?.type === "image" && transform && fit === "contain"
-      ? cloudinaryBlurFill(primary.path, 48, 36)
+    primary?.type === "image" && transform
+      ? cloudinaryBlurFill(
+          primary.path,
+          48,
+          Math.max(1, Math.round((48 * transform.h) / transform.w))
+        )
       : null;
 
   // Subtle treatment so varied casual phone photos cohere: a touch more
@@ -62,25 +68,16 @@ export function CarThumb({
     >
       {primary?.type === "image" ? (
         <>
-          {blurSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={blurSrc}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 h-full w-full scale-110 object-cover"
-            />
-          )}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <BlurUpImage
             src={imageSrc}
+            blurSrc={blurSrc}
             alt={`${car.manufacturer} ${car.carModel}`}
+            blurClassName={fit === "contain" ? "scale-110" : undefined}
             className={cn(
               mediaClass,
               "relative",
               fit === "contain" ? "object-contain" : "object-cover"
             )}
-            loading="lazy"
           />
           {/* Faint vignette to seat the photo. */}
           <span

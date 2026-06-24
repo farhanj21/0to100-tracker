@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
 import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
+import { BlurUpImage } from "@/components/blur-up-image";
 import type { MediaDTO } from "@/lib/types";
 
 export function Gallery({
@@ -257,34 +258,26 @@ function MediaTile({
   if (media.type === "image") {
     if (contain) {
       return (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={cloudinaryBlurFill(media.path, 64, 48)}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full scale-110 object-cover"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={cloudinaryThumb(media.path, 720, 540, "fit")}
-            alt=""
-            className="relative h-full w-full object-contain [filter:contrast(1.04)_saturate(1.06)]"
-            loading="lazy"
-          />
-        </>
+        <BlurUpImage
+          src={cloudinaryThumb(media.path, 720, 540, "fit")}
+          blurSrc={cloudinaryBlurFill(media.path, 64, 48)}
+          alt=""
+          blurClassName="scale-110"
+          className="relative h-full w-full object-contain [filter:contrast(1.04)_saturate(1.06)]"
+        />
       );
     }
+    // Big cover image gets a blur-up; the tiny 120px thumbs just fade in
+    // (a blur placeholder there would only double the request for no gain).
     const src = thumb
       ? cloudinaryThumb(media.path, 120, 120, "fill")
       : cloudinaryThumb(media.path, 640, 360, "fill");
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <BlurUpImage
         src={src}
+        blurSrc={thumb ? null : cloudinaryBlurFill(media.path, 48, 27)}
         alt=""
         className="h-full w-full object-cover [filter:contrast(1.04)_saturate(1.06)]"
-        loading="lazy"
       />
     );
   }
