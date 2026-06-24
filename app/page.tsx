@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, AlertTriangle } from "lucide-react";
 import { getRankedCars } from "@/lib/cars";
+import { leaderboardStats } from "@/lib/stats";
 import { Leaderboard } from "@/components/leaderboard/leaderboard";
 import { Button } from "@/components/ui/button";
 import type { CarDTO } from "@/lib/types";
@@ -27,7 +28,7 @@ export default async function HomePage() {
       ) : cars.length === 0 ? (
         <EmptyState />
       ) : (
-        <Leaderboard cars={cars} />
+        <Leaderboard cars={cars} stats={leaderboardStats(cars)} />
       )}
     </div>
   );

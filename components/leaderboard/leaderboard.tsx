@@ -9,6 +9,7 @@ import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import { DistributionPlot } from "@/components/leaderboard/distribution-plot";
+import { StatsStrip } from "@/components/leaderboard/stats-strip";
 import {
   Filters,
   EMPTY_FILTERS,
@@ -17,13 +18,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn, carTitle } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
+import type { LeaderboardStats } from "@/lib/stats";
 
 type View = "cards" | "table";
 
 /** Maximum cars in a single comparison (keeps the compare table readable). */
 const MAX_COMPARE = 3;
 
-export function Leaderboard({ cars }: { cars: CarDTO[] }) {
+export function Leaderboard({
+  cars,
+  stats,
+}: {
+  cars: CarDTO[];
+  stats: LeaderboardStats;
+}) {
   const router = useRouter();
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [view, setView] = useState<View>("cards");
@@ -115,6 +123,8 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
   return (
     <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
+
+      <StatsStrip stats={stats} />
 
       <section className="space-y-4">
         <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
