@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { SearchX, LayoutList, Table2 } from "lucide-react";
+import { toast } from "sonner";
+import { SearchX, LayoutList, Table2, GitCompareArrows, X } from "lucide-react";
 import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
@@ -11,14 +13,21 @@ import {
   EMPTY_FILTERS,
   type FilterState,
 } from "@/components/leaderboard/filters";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { cn, carTitle } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
 type View = "cards" | "table";
 
+/** Maximum cars in a single comparison (keeps the compare table readable). */
+const MAX_COMPARE = 3;
+
 export function Leaderboard({ cars }: { cars: CarDTO[] }) {
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [view, setView] = useState<View>("cards");
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const manufacturers = useMemo(
     () =>
@@ -61,8 +70,40 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
   const marginToNext = cars[1] ? cars[1].zeroToHundred - leaderTime : 0;
   const boardCars = filtered;
 
+  const selectedCars = useMemo(
+    () =>
+      selectedIds
+        .map((id) => cars.find((c) => c.id === id))
+        .filter(Boolean) as CarDTO[],
+    [selectedIds, cars]
+  );
+  const maxReached = selectedIds.length >= MAX_COMPARE;
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= MAX_COMPARE) {
+        toast.error(`Compare up to ${MAX_COMPARE} cars at a time.`);
+        return prev;
+      }
+      return [...prev, id];
+    });
+  }
+
+  function toggleCompareMode() {
+    setCompareMode((on) => {
+      if (on) setSelectedIds([]); // leaving compare mode clears the picks
+      return !on;
+    });
+  }
+
+  function goCompare() {
+    if (selectedIds.length < 2) return;
+    router.push(`/compare?ids=${selectedIds.join(",")}`);
+  }
+
   return (
-    <div className="space-y-10">
+    <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
 
       <section className="space-y-4">
@@ -81,14 +122,40 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           totalCount={cars.length}
         />
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={toggleCompareMode}
+            aria-pressed={compareMode}
+            className={cn(
+              "inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+              compareMode
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <GitCompareArrows className="h-3 w-3" />
+            {compareMode ? "Comparing" : "Compare"}
+          </button>
           <ViewToggle view={view} onChange={setView} />
         </div>
+
+        {compareMode && (
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Pick 2–3 cars to compare.
+          </p>
+        )}
 
         {boardCars.length === 0 ? (
           <EmptyResults />
         ) : view === "table" ? (
-          <LeaderboardTable cars={boardCars} />
+          <LeaderboardTable
+            cars={boardCars}
+            selectable={compareMode}
+            selectedIds={selectedIds}
+            maxReached={maxReached}
+            onToggleSelect={toggleSelect}
+          />
         ) : (
           <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
@@ -97,13 +164,95 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
                   key={car.id}
                   car={car}
                   gap={car.zeroToHundred - leaderTime}
+                  selectable={compareMode}
+                  selected={selectedIds.includes(car.id)}
+                  disabled={!selectedIds.includes(car.id) && maxReached}
+                  onToggleSelect={toggleSelect}
                 />
               ))}
             </AnimatePresence>
           </motion.div>
         )}
       </section>
+
+      <CompareBar
+        cars={selectedCars}
+        open={compareMode && selectedCars.length > 0}
+        onRemove={toggleSelect}
+        onClear={() => setSelectedIds([])}
+        onCompare={goCompare}
+      />
     </div>
+  );
+}
+
+function CompareBar({
+  cars,
+  open,
+  onRemove,
+  onClear,
+  onCompare,
+}: {
+  cars: CarDTO[];
+  open: boolean;
+  onRemove: (id: string) => void;
+  onClear: () => void;
+  onCompare: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ y: 80 }}
+          animate={{ y: 0 }}
+          exit={{ y: 80 }}
+          transition={{ type: "spring", stiffness: 420, damping: 36 }}
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur"
+        >
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                Compare
+              </span>
+              {cars.map((car) => (
+                <span
+                  key={car.id}
+                  className="inline-flex items-center gap-1.5 border border-border bg-secondary/50 py-1 pl-2.5 pr-1 text-xs"
+                >
+                  <span className="max-w-[12rem] truncate">{carTitle(car)}</span>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(car.id)}
+                    aria-label={`Remove ${carTitle(car)}`}
+                    className="rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClear}
+                className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={onCompare}
+                disabled={cars.length < 2}
+              >
+                <GitCompareArrows className="h-4 w-4" />
+                Compare {cars.length}
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
