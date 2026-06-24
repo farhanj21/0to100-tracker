@@ -8,6 +8,7 @@ import { SearchX, LayoutList, Table2, GitCompareArrows, X } from "lucide-react";
 import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
+import { DistributionPlot } from "@/components/leaderboard/distribution-plot";
 import {
   Filters,
   EMPTY_FILTERS,
@@ -28,6 +29,9 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
   const [view, setView] = useState<View>("cards");
   const [compareMode, setCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Shared between the distribution plot and the list: hovering a dot lifts its
+  // row and vice-versa.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const manufacturers = useMemo(
     () =>
@@ -69,6 +73,12 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
   const leaderTime = hero.zeroToHundred;
   const marginToNext = cars[1] ? cars[1].zeroToHundred - leaderTime : 0;
   const boardCars = filtered;
+  // Fixed across the whole field (cars are ranked fastest→slowest), so the plot
+  // doesn't rescale when filtered — dots keep their absolute position.
+  const timeDomain: [number, number] = [
+    leaderTime,
+    cars[cars.length - 1].zeroToHundred,
+  ];
 
   const selectedCars = useMemo(
     () =>
@@ -122,6 +132,14 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           totalCount={cars.length}
         />
 
+        <DistributionPlot
+          cars={boardCars}
+          domain={timeDomain}
+          leaderId={hero.id}
+          hoveredId={hoveredId}
+          onHover={setHoveredId}
+        />
+
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
@@ -155,6 +173,8 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
             selectedIds={selectedIds}
             maxReached={maxReached}
             onToggleSelect={toggleSelect}
+            hoveredId={hoveredId}
+            onHover={setHoveredId}
           />
         ) : (
           <motion.div layout className="border-t border-border">
@@ -168,6 +188,8 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
                   selected={selectedIds.includes(car.id)}
                   disabled={!selectedIds.includes(car.id) && maxReached}
                   onToggleSelect={toggleSelect}
+                  hovered={hoveredId === car.id}
+                  onHover={setHoveredId}
                 />
               ))}
             </AnimatePresence>

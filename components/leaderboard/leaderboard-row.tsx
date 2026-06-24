@@ -14,6 +14,8 @@ export function LeaderboardRow({
   selected = false,
   disabled = false,
   onToggleSelect,
+  hovered = false,
+  onHover,
 }: {
   car: CarDTO;
   /** Seconds behind the global leader. */
@@ -24,6 +26,9 @@ export function LeaderboardRow({
   /** Selection cap reached and this row isn't already selected. */
   disabled?: boolean;
   onToggleSelect?: (id: string) => void;
+  /** Cross-highlighted from the distribution plot. */
+  hovered?: boolean;
+  onHover?: (id: string | null) => void;
 }) {
   const reduce = useReducedMotion();
 
@@ -31,22 +36,31 @@ export function LeaderboardRow({
     "group relative grid grid-cols-[1.75rem_auto_1fr_auto] items-center gap-3 border-b border-border py-4 pl-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[2.25rem_auto_1fr_5rem_auto] sm:gap-5 sm:pl-4",
     selectable && "w-full text-left",
     selected && "bg-primary/5",
+    hovered && "bg-secondary/40",
     disabled && "cursor-not-allowed opacity-45"
   );
 
   const inner = (
     <>
-      {/* Edge marker — hover when linking, solid when selected */}
+      {/* Edge marker — hover when linking, solid when selected or cross-hovered */}
       <span
         aria-hidden
         className={cn(
           "absolute left-0 top-0 h-full w-[3px] origin-top bg-primary transition-transform duration-300 ease-out",
-          selected ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
+          selected || hovered ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100"
         )}
       />
 
-      {/* Rank */}
-      <span className="font-mono text-base font-bold tabular-nums text-muted-foreground transition-colors group-hover:text-primary sm:text-xl">
+      {/* Rank — top 3 (or the cross-hovered row) carry a quiet cobalt numeral,
+          everyone else greys until hover. */}
+      <span
+        className={cn(
+          "font-mono text-base font-bold tabular-nums transition-colors sm:text-xl",
+          car.position <= 3 || hovered
+            ? "text-primary"
+            : "text-muted-foreground group-hover:text-primary"
+        )}
+      >
         {String(car.position).padStart(2, "0")}
       </span>
 
@@ -132,12 +146,19 @@ export function LeaderboardRow({
           onClick={() => onToggleSelect?.(car.id)}
           disabled={disabled}
           aria-pressed={selected}
+          onMouseEnter={() => onHover?.(car.id)}
+          onMouseLeave={() => onHover?.(null)}
           className={wrapperClass}
         >
           {inner}
         </button>
       ) : (
-        <Link href={`/cars/${car.id}`} className={wrapperClass}>
+        <Link
+          href={`/cars/${car.id}`}
+          onMouseEnter={() => onHover?.(car.id)}
+          onMouseLeave={() => onHover?.(null)}
+          className={wrapperClass}
+        >
           {inner}
         </Link>
       )}
