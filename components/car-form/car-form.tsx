@@ -33,16 +33,26 @@ interface CarFormProps {
   defaultValues?: Partial<CarInput>;
 }
 
+// Block characters that would produce a negative (or exponential) value in
+// number inputs — the user shouldn't even be able to type them.
+function blockNegativeKeys(e: React.KeyboardEvent<HTMLInputElement>) {
+  if (["-", "+", "e", "E"].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
 const BLANK: CarInput = {
-  modelYear: new Date().getFullYear(),
+  // Numeric fields start blank so the user enters them explicitly.
+  modelYear: "" as unknown as number,
   manufacturer: "",
   carModel: "",
   variant: "",
-  engineSize: 2,
-  powertrainType: "Petrol",
-  transmission: "Auto",
-  induction: "Turbocharged",
-  zeroToHundred: 5,
+  engineSize: "" as unknown as number,
+  // Dropdowns start unselected so their placeholder shows.
+  powertrainType: "" as unknown as CarInput["powertrainType"],
+  transmission: "" as unknown as CarInput["transmission"],
+  induction: "" as unknown as CarInput["induction"],
+  zeroToHundred: "" as unknown as number,
   media: [],
   specs: [],
   features: [],
@@ -183,22 +193,25 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
       <Section title="Identity">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Manufacturer" error={errors.manufacturer?.message}>
-            <Input placeholder="e.g. Porsche" {...register("manufacturer")} />
+            <Input placeholder="Enter car manufacturer" {...register("manufacturer")} />
           </Field>
           <Field label="Model" error={errors.carModel?.message}>
-            <Input placeholder="e.g. 911" {...register("carModel")} />
+            <Input placeholder="Enter car model" {...register("carModel")} />
           </Field>
           <Field
-            label="Variant / trim"
+            label="Variant / Trim"
             error={errors.variant?.message}
-            hint="Optional. A trim level sharpens the lookup (e.g. Turbo S, GLI, Altis Grande)."
+            hint="Optional. A trim level sharpens the lookup (e.g. GLI, Altis Grande)."
           >
-            <Input placeholder="e.g. Turbo S" {...register("variant")} />
+            <Input placeholder="Enter car variant / trim" {...register("variant")} />
           </Field>
           <Field label="Model year" error={errors.modelYear?.message}>
             <Input
               type="number"
               inputMode="numeric"
+              min={0}
+              placeholder="Enter car model year"
+              onKeyDown={blockNegativeKeys}
               {...register("modelYear")}
             />
           </Field>
@@ -207,6 +220,9 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
               type="number"
               step="any"
               inputMode="decimal"
+              min={0}
+              placeholder="Enter car engine size"
+              onKeyDown={blockNegativeKeys}
               {...register("engineSize")}
             />
           </Field>
@@ -216,7 +232,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
         <div className="mt-5 border-t border-border pt-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">
-              Fills engine, powertrain, transmission &amp; induction from a free
+              Fills car specifications &amp; features from a free
               web lookup. Review before saving.
             </p>
             <Button
@@ -282,7 +298,10 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
               type="number"
               step="any"
               inputMode="decimal"
+              min={0}
+              placeholder="0–100 time in secs"
               className="pl-9 font-mono text-lg"
+              onKeyDown={blockNegativeKeys}
               {...register("zeroToHundred")}
             />
           </div>
