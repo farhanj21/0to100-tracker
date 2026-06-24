@@ -10,6 +10,8 @@ import {
   AlignLeft,
   ListChecks,
   Check,
+  Play,
+  Pause,
 } from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, carTitle } from "@/lib/utils";
@@ -56,7 +58,7 @@ function distFrac(t: number): number {
   return ((k + 1) * t + Math.pow(1 - t, k + 1) - 1) / k;
 }
 
-type Phase = "idle" | "running" | "done";
+type Phase = "idle" | "running" | "paused" | "done";
 
 /**
  * Watches a set of cars run 0–100 km/h in real time. All lanes share one clock
@@ -99,10 +101,16 @@ export function RaceTrack({
   // 0→1 per lane, plus a shared elapsed clock (seconds). Driven by one rAF loop.
   const [progress, setProgress] = useState<number[]>(() => cars.map(() => 0));
   const [elapsed, setElapsed] = useState(0);
-  const [phase, setPhase] = useState<Phase>("idle");
-  // Bumping this re-arms the effect below, restarting the run. Starts at 1 so the
-  // race auto-plays on mount — landing on the page shows the dots travelling.
-  const [runId, setRunId] = useState(1);
+  // Auto-plays on mount; pause/resume/replay are driven explicitly by `phase`.
+  const [phase, setPhase] = useState<Phase>("running");
+  // Clock bookkeeping that must survive renders without re-arming the loop:
+  // `elapsedRef` mirrors `elapsed` for the pause handler, `baseRef` is the time
+  // already run before the current segment (so Resume continues, not restarts).
+  const elapsedRef = useRef(0);
+  const baseRef = useRef(0);
+  // Set when the field changes while the picker is open, so closing it can play
+  // the new selection (but a bare open/close with no change won't replay).
+  const gridDirtyRef = useRef(false);
   // "Race all" can be experienced two ways; the dense lanes lead (the dot's
   // motion is true velocity, so it keeps accelerating), with the speed-vs-time
   // graph a click away.
@@ -117,7 +125,8 @@ export function RaceTrack({
     () => (minimal ? cars.filter((c) => !excluded.has(c.id)) : cars),
     [cars, excluded, minimal]
   );
-  // Identity of the current grid — toggling a car restarts the run (see effect).
+  // Identity of the current grid — when it changes, the run re-racks to the start
+  // line and waits (see effect), rather than auto-restarting on every pick.
   const racedKey = useMemo(() => racedCars.map((c) => c.id).join(","), [racedCars]);
 
   const times = useMemo(() => racedCars.map((c) => c.zeroToHundred), [racedCars]);
@@ -139,50 +148,126 @@ export function RaceTrack({
   const selectAll = () => setExcluded(new Set());
   const selectNone = () => setExcluded(new Set(cars.map((c) => c.id)));
 
-  // The run itself. Re-runs whenever runId changes (Replay) or motion pref flips.
-  useEffect(() => {
-    if (runId === 0) return; // don't auto-play on mount; wait for Start/Replay
+  // Writes both the clock state and its ref mirror (the ref is read by the pause
+  // handler, which can't see the latest state through its closure).
+  const setClock = useCallback((secs: number) => {
+    elapsedRef.current = secs;
+    setElapsed(secs);
+  }, []);
 
+  // When the field changes (a car toggled in/out, or All/None), show the new
+  // selection as a static *finished* snapshot — each car parked at its result —
+  // rather than auto-restarting on every pick (which loops) or freezing every
+  // dot at the start line (which looks broken). Closing the picker then plays it
+  // out (see below). The initial mount is skipped so the race auto-plays on landing.
+  const prevKeyRef = useRef(racedKey);
+  useEffect(() => {
+    if (prevKeyRef.current === racedKey) return; // initial mount / unchanged grid
+    prevKeyRef.current = racedKey;
+    gridDirtyRef.current = true;
+    baseRef.current = 0;
     if (racedCars.length === 0) {
-      // Nothing selected — clear the grid and idle.
       setProgress([]);
-      setElapsed(0);
+      setClock(0);
       setPhase("idle");
       return;
     }
+    setProgress(racedCars.map(() => 1));
+    setClock(slowest);
+    setPhase("done");
+  }, [racedKey, racedCars, slowest, setClock]);
 
+  // Curating is calm (the snapshot above doesn't move); committing the selection
+  // by closing the picker plays the field from the start, so you watch your pick
+  // race rather than landing on a frozen grid. A bare open/close with no change
+  // doesn't replay.
+  const prevPickerRef = useRef(pickerOpen);
+  useEffect(() => {
+    const wasOpen = prevPickerRef.current;
+    prevPickerRef.current = pickerOpen;
+    if (!wasOpen && pickerOpen) {
+      gridDirtyRef.current = false; // entering curation; track changes from here
+    } else if (wasOpen && !pickerOpen && gridDirtyRef.current && racedCars.length) {
+      gridDirtyRef.current = false;
+      baseRef.current = 0;
+      setClock(0);
+      setProgress(racedCars.map(() => 0));
+      setPhase("running");
+    }
+  }, [pickerOpen, racedCars, setClock]);
+
+  // The run loop. Active only while `phase === "running"`; pausing cancels it and
+  // banks the elapsed time in `baseRef`, so resuming continues rather than restarts.
+  useEffect(() => {
+    if (phase !== "running") return;
+    if (racedCars.length === 0) {
+      setPhase("idle");
+      return;
+    }
     if (reduce) {
       // Snap everything to the finish — no animation, but the result is shown.
       setProgress(racedCars.map(() => 1));
-      setElapsed(slowest);
+      setClock(slowest);
       setPhase("done");
       return;
     }
 
     let raf = 0;
     let start = 0;
-    setProgress(racedCars.map(() => 0));
-    setElapsed(0);
-    setPhase("running");
-
     const tick = (now: number) => {
       if (!start) start = now;
-      const secs = (now - start) / 1000;
-      setElapsed(Math.min(secs, slowest));
-      setProgress(times.map((t) => Math.min(1, secs / t)));
+      const secs = baseRef.current + (now - start) / 1000;
       if (secs < slowest) {
+        setClock(secs);
+        setProgress(times.map((t) => Math.min(1, secs / t)));
         raf = requestAnimationFrame(tick);
       } else {
+        setClock(slowest);
         setProgress(times.map(() => 1));
         setPhase("done");
       }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // racedKey makes toggling a car restart the run with the new grid.
-  }, [runId, reduce, racedKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    // times/slowest are stable for a given grid; phase drives start/stop.
+  }, [phase, reduce, slowest, times, racedCars, setClock]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mirror of `phase` for the transport handler, which is memoised without
+  // `phase` in its deps (so it doesn't tear down the loop on every state change).
+  const phaseRef = useRef(phase);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  // Single transport control: Start → Pause → Resume, and Replay once finished.
+  const onTransport = useCallback(() => {
+    const p = phaseRef.current;
+    if (p === "running") {
+      baseRef.current = elapsedRef.current; // bank progress for Resume
+      setPhase("paused");
+    } else if (p === "paused") {
+      setPhase("running"); // resume from where we paused
+    } else {
+      // idle or done → (re)start from the beginning
+      baseRef.current = 0;
+      setClock(0);
+      setProgress(racedCars.map(() => 0));
+      setPhase("running");
+    }
+  }, [racedCars, setClock]);
 
   const single = racedCars.length === 1;
+
+  // Transport button state. Kept as data so the label can collapse to an
+  // icon-only button on mobile without the row reflowing as the label changes.
+  const transport =
+    phase === "running"
+      ? { label: "Pause", Icon: Pause }
+      : phase === "paused"
+        ? { label: "Resume", Icon: Play }
+        : phase === "done"
+          ? { label: single ? "Replay" : "Race again", Icon: RotateCcw }
+          : { label: single ? "Play" : "Start race", Icon: Flag };
 
   const title = minimal
     ? `The Race · ${racedCars.length} cars`
@@ -195,7 +280,7 @@ export function RaceTrack({
       {/* Header: title + live clock + controls */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-2">
         <h2 className="hidden font-display text-2xl sm:block sm:text-3xl">{title}</h2>
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           {minimal && (
             <button
               type="button"
@@ -209,29 +294,26 @@ export function RaceTrack({
               )}
             >
               <ListChecks className="h-3 w-3" />
-              Cars {racedCars.length}/{cars.length}
+              <span className="hidden sm:inline">Cars </span>
+              {racedCars.length}/{cars.length}
             </button>
           )}
           {minimal && (
             <RaceViewToggle graph={graphView} onChange={setGraphView} />
           )}
-          <span className="font-mono text-sm tabular-nums text-muted-foreground">
+          <span className="inline-block min-w-[3.25rem] text-right font-mono text-sm tabular-nums text-muted-foreground">
             {elapsed.toFixed(2)}s
           </span>
           <button
             type="button"
-            onClick={() => setRunId((n) => n + 1)}
-            className="inline-flex shrink-0 items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
+            onClick={onTransport}
+            aria-label={transport.label}
+            title={transport.label}
+            className="inline-flex shrink-0 items-center gap-1.5 border border-border bg-card px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground sm:px-3"
           >
-            {phase !== "idle" ? (
-              <>
-                <RotateCcw className="h-3 w-3" /> {single ? "Replay" : "Race again"}
-              </>
-            ) : (
-              <>
-                <Flag className="h-3 w-3" /> {single ? "Play" : "Start race"}
-              </>
-            )}
+            <transport.Icon className="h-3 w-3" />
+            {/* Label hides on mobile so the control row stays on one line. */}
+            <span className="hidden sm:inline">{transport.label}</span>
           </button>
         </div>
       </div>
@@ -279,7 +361,6 @@ export function RaceTrack({
           cars={racedCars}
           times={times}
           progress={progress}
-          phase={phase}
           single={single}
           winnerIdx={winnerIdx}
           trackWidth={trackWidth}
@@ -429,7 +510,7 @@ function RaceGraph({
       </div>
 
       <p className="pl-10 text-sm text-muted-foreground">
-        Each dot climbs to 100 km/h in real time — quickest{" "}
+        Each dot climbs to 100 km/h in real time. Quickest is{" "}
         <span className="font-semibold text-foreground">
           {carTitle(cars[winnerIdx])}
         </span>{" "}
@@ -452,8 +533,8 @@ function RaceViewToggle({
   onChange: (graph: boolean) => void;
 }) {
   const options: { graph: boolean; label: string; icon: typeof BarChart2 }[] = [
-    { graph: true, label: "Graph", icon: BarChart2 },
     { graph: false, label: "Lanes", icon: AlignLeft },
+    { graph: true, label: "Graph", icon: BarChart2 },
   ];
   return (
     <div className="inline-flex shrink-0 divide-x divide-border border border-border bg-card">
@@ -581,7 +662,9 @@ function RaceLanesMini({
   measureRef: (el: HTMLDivElement | null) => void;
 }) {
   const DOT = 13;
-  const travel = Math.max(0, trackWidth - DOT);
+  // Reserve the dot's width plus a hair for its ring so the leading edge stops
+  // *at* the finish line, not flush with (and poking past) the container edge.
+  const travel = Math.max(0, trackWidth - DOT - 2);
 
   return (
     <div className="space-y-2">
@@ -644,7 +727,7 @@ function RaceLanesMini({
       </div>
 
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-        Every car launches together in real time — the leading dot is quickest to 100 km/h.
+        Every car launches together in real time. The leading dot is quickest to 100 km/h.
       </p>
     </div>
   );
@@ -658,7 +741,6 @@ function Lanes({
   cars,
   times,
   progress,
-  phase,
   single,
   winnerIdx,
   trackWidth,
@@ -667,14 +749,15 @@ function Lanes({
   cars: CarDTO[];
   times: number[];
   progress: number[];
-  phase: Phase;
   single: boolean;
   winnerIdx: number;
   trackWidth: number;
   measureRef: (el: HTMLDivElement | null) => void;
 }) {
   const DOT = 18;
-  const travel = Math.max(0, trackWidth - DOT);
+  // Reserve the dot's width plus a hair for its ring so the leading edge stops
+  // *at* the finish line, not flush with (and poking past) the container edge.
+  const travel = Math.max(0, trackWidth - DOT - 2);
 
   return (
     <>
@@ -734,10 +817,7 @@ function Lanes({
                 <div className="absolute bottom-0 right-0 top-0 flex w-px items-center bg-foreground">
                 </div>
                 <div
-                  className={cn(
-                    "absolute top-1/2 -translate-y-1/2 rounded-full ring-2 ring-background",
-                    phase === "running" && "shadow-lg"
-                  )}
+                  className="absolute top-1/2 -translate-y-1/2 rounded-full ring-2 ring-background"
                   style={{
                     left: 0,
                     width: DOT,
@@ -755,7 +835,7 @@ function Lanes({
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {single
           ? "The dot crosses in the car's real 0–100 time."
-          : "All cars launch together in real time — quickest to 100 km/h wins."}
+          : "All cars launch together in real time. Quickest to 100 km/h wins."}
       </p>
     </>
   );
