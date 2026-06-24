@@ -193,7 +193,7 @@ export function RaceTrack({
     <div className="space-y-5">
       {/* Header: title + live clock + controls */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-2">
-        <h2 className="font-display text-3xl">{title}</h2>
+        <h2 className="font-display text-2xl sm:text-3xl">{title}</h2>
         <div className="flex flex-wrap items-center gap-3">
           {minimal && (
             <button
@@ -408,13 +408,13 @@ function RaceGraph({
           {cars.map((car, i) => (
             <div
               key={car.id}
-              className="flex h-20 min-w-0 flex-1 justify-center"
+              className="flex h-20 min-w-0 flex-1 justify-center overflow-hidden"
             >
               <span
                 title={`${carTitle(car)} — ${formatTime(times[i])}s`}
                 style={{ writingMode: "vertical-rl" }}
                 className={cn(
-                  "max-h-20 overflow-hidden text-ellipsis whitespace-nowrap pt-1 text-[10px]",
+                  "max-h-20 overflow-hidden text-ellipsis whitespace-nowrap pt-1 text-[10px] leading-none",
                   i === winnerIdx
                     ? "font-semibold text-primary"
                     : "text-muted-foreground"
