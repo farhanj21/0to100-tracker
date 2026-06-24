@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 /** Keep in sync with MAX_COMPARE — a readable track tops out around three lanes. */
 const MAX_RACE = 3;
+/** "Race all" uses the dense layout; cap high enough for the whole field. */
+const MAX_RACE_ALL = 60;
 
 export const metadata: Metadata = {
   title: "Race · 0–100",
@@ -18,8 +20,9 @@ export const metadata: Metadata = {
 export default async function RacePage({
   searchParams,
 }: {
-  searchParams: { ids?: string };
+  searchParams: { ids?: string; minimal?: string };
 }) {
+  const minimal = searchParams.minimal === "1";
   const requested = Array.from(
     new Set(
       (searchParams.ids ?? "")
@@ -27,7 +30,7 @@ export default async function RacePage({
         .map((s) => s.trim())
         .filter(Boolean)
     )
-  ).slice(0, MAX_RACE);
+  ).slice(0, minimal ? MAX_RACE_ALL : MAX_RACE);
 
   const ranked = await getRankedCars();
   const byId = new Map(ranked.map((c) => [c.id, c]));
@@ -44,7 +47,7 @@ export default async function RacePage({
         >
           <ArrowLeft className="h-4 w-4" /> Leaderboard
         </Link>
-        {cars.length >= 2 && (
+        {!minimal && cars.length >= 2 && (
           <Link
             href={`/compare?ids=${cars.map((c) => c.id).join(",")}`}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -66,7 +69,7 @@ export default async function RacePage({
       {cars.length < 1 ? (
         <Nothing />
       ) : (
-        <RaceTrack cars={cars} />
+        <RaceTrack cars={cars} minimal={minimal} />
       )}
     </div>
   );

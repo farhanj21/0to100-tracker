@@ -125,6 +125,13 @@ export function Leaderboard({
     router.push(`/race?ids=${selectedIds.join(",")}`);
   }
 
+  function goRaceAll() {
+    if (boardCars.length === 0) return;
+    // Race the currently visible board (respects filters), in the dense layout.
+    const ids = boardCars.map((c) => c.id).join(",");
+    router.push(`/race?ids=${ids}&minimal=1`);
+  }
+
   return (
     <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
@@ -156,20 +163,32 @@ export function Leaderboard({
         />
 
         <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={toggleCompareMode}
-            aria-pressed={compareMode}
-            className={cn(
-              "inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
-              compareMode
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <GitCompareArrows className="h-3 w-3" />
-            {compareMode ? "Comparing" : "Compare"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleCompareMode}
+              aria-pressed={compareMode}
+              className={cn(
+                "inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+                compareMode
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <GitCompareArrows className="h-3 w-3" />
+              {compareMode ? "Comparing" : "Compare"}
+            </button>
+            <button
+              type="button"
+              onClick={goRaceAll}
+              disabled={boardCars.length === 0}
+              title="Race every car on the board"
+              className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              <Flag className="h-3 w-3" />
+              Race all
+            </button>
+          </div>
           <ViewToggle view={view} onChange={setView} />
         </div>
 

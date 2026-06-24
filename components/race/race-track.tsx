@@ -8,16 +8,23 @@ import { cn, formatTime, carTitle } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
 
 /**
- * Lane colours, assigned by selection order. Lane 0 takes the app's primary
- * accent (the recurring "best/leader" colour); the rest are fixed hues picked to
- * stay legible in both light and dark themes. Cars have no colour of their own,
- * so this is purely positional.
+ * Lane colours for a small field (≤3), assigned by selection order. Lane 0 takes
+ * the app's primary accent (the recurring "best/leader" colour); the rest are
+ * fixed hues that stay legible in both themes. For a large "race all" field we
+ * spread hues evenly instead (see `laneColor`).
  */
 const LANE_COLORS = [
   "hsl(var(--primary))",
   "hsl(28 85% 52%)",
   "hsl(160 60% 42%)",
 ];
+
+function laneColor(i: number, count: number, minimal: boolean): string {
+  if (!minimal) return LANE_COLORS[i % LANE_COLORS.length];
+  // Even hue ramp so dozens of lanes stay distinguishable at a glance.
+  const hue = Math.round((i * 360) / Math.max(1, count));
+  return `hsl(${hue} 70% 50%)`;
+}
 
 type Phase = "idle" | "running" | "done";
 
@@ -26,8 +33,17 @@ type Phase = "idle" | "running" | "done";
  * left→right, taking each car's true `zeroToHundred` seconds to reach the finish.
  * All lanes share a single clock and launch together, so the quicker car visibly
  * arrives first. Honours reduced-motion by rendering the finished state outright.
+ *
+ * `minimal` switches to a dense one-line-per-car layout so the whole board fits
+ * on screen (used by "Race all").
  */
-export function RaceTrack({ cars }: { cars: CarDTO[] }) {
+export function RaceTrack({
+  cars,
+  minimal = false,
+}: {
+  cars: CarDTO[];
+  minimal?: boolean;
+}) {
   const reduce = useReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
   const [trackWidth, setTrackWidth] = useState(0);
@@ -49,7 +65,8 @@ export function RaceTrack({ cars }: { cars: CarDTO[] }) {
     return best;
   }, [times]);
 
-  // Responsive track width — same ResizeObserver approach as the distribution plot.
+  // Responsive track width — measured on the first lane's track (all lanes share
+  // the same width, in either layout). Same ResizeObserver idea as the dist plot.
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -95,18 +112,23 @@ export function RaceTrack({ cars }: { cars: CarDTO[] }) {
   }, [runId, reduce]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const single = cars.length === 1;
-  const started = phase !== "idle";
-  // Dot travel distance: leave room so the dot's leading edge meets the finish.
-  const DOT = 22;
+  const DOT = minimal ? 13 : 18;
   const travel = Math.max(0, trackWidth - DOT);
+
+  const title = minimal
+    ? `The Race · ${cars.length} cars`
+    : single
+      ? "0–100 visualized"
+      : "The Race";
+  const caption = single
+    ? "The dot crosses in the car's real 0–100 time."
+    : `All ${cars.length} cars launch together in real time — quickest to 100 km/h wins.`;
 
   return (
     <div className="space-y-5">
       {/* Header: title + live clock + controls */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-2">
-        <h2 className="font-display text-3xl">
-          {single ? "0–100 visualized" : "The Race"}
-        </h2>
+        <h2 className="font-display text-3xl">{title}</h2>
         <div className="flex items-center gap-4">
           <span className="font-mono text-sm tabular-nums text-muted-foreground">
             {elapsed.toFixed(2)}s
@@ -116,7 +138,7 @@ export function RaceTrack({ cars }: { cars: CarDTO[] }) {
             onClick={() => setRunId((n) => n + 1)}
             className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
           >
-            {started ? (
+            {phase !== "idle" ? (
               <>
                 <RotateCcw className="h-3 w-3" /> {single ? "Replay" : "Race again"}
               </>
@@ -130,19 +152,88 @@ export function RaceTrack({ cars }: { cars: CarDTO[] }) {
       </div>
 
       {/* Lanes */}
-      <div ref={trackRef} className="space-y-3">
+      <div
+        className={cn(
+          minimal
+            ? "divide-y divide-border/60 border-y border-border"
+            : "space-y-3"
+        )}
+      >
         {cars.map((car, i) => {
           const p = progress[i] ?? 0;
           const speed = Math.round(p * 100);
           const finished = p >= 1;
           const isWinner = !single && finished && i === winnerIdx;
-          const color = LANE_COLORS[i % LANE_COLORS.length];
+          const color = laneColor(i, cars.length, minimal);
+
+          // The travelling dot, shared by both layouts.
+          const dot = (
+            <div
+              ref={i === 0 ? trackRef : undefined}
+              className={cn("relative", minimal ? "h-6" : "h-9")}
+            >
+              {/* Rail */}
+              <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
+              {/* Start line */}
+              <div className="absolute bottom-0 left-0 top-0 w-px bg-border" />
+              {/* Finish line */}
+              <div className="absolute bottom-0 right-0 top-0 flex w-px items-center bg-foreground">
+                {!minimal && (
+                  <Flag className="absolute -right-0.5 -top-3 h-3.5 w-3.5 text-foreground" />
+                )}
+              </div>
+              {/* Dot */}
+              <div
+                className={cn(
+                  "absolute top-1/2 -translate-y-1/2 rounded-full ring-background",
+                  minimal ? "ring-1" : "ring-2",
+                  phase === "running" && !minimal && "shadow-lg"
+                )}
+                style={{
+                  left: 0,
+                  width: DOT,
+                  height: DOT,
+                  backgroundColor: color,
+                  transform: `translate(${p * travel}px, -50%)`,
+                }}
+              />
+            </div>
+          );
+
+          if (minimal) {
+            return (
+              <div
+                key={car.id}
+                className="grid grid-cols-[6.5rem_1fr_3rem] items-center gap-2 py-1 sm:grid-cols-[12rem_1fr_3.5rem] sm:gap-3"
+              >
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    aria-hidden
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  {isWinner && (
+                    <Trophy className="h-3 w-3 shrink-0 text-primary" />
+                  )}
+                  <span
+                    className={cn(
+                      "truncate text-xs",
+                      isWinner && "font-semibold"
+                    )}
+                  >
+                    {carTitle(car)}
+                  </span>
+                </div>
+                {dot}
+                <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {finished ? `${formatTime(car.zeroToHundred)}s` : `${speed}`}
+                </span>
+              </div>
+            );
+          }
 
           return (
-            <div
-              key={car.id}
-              className="border border-border bg-card p-3 sm:p-4"
-            >
+            <div key={car.id} className="border border-border bg-card p-3 sm:p-4">
               {/* Lane label row */}
               <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -175,39 +266,14 @@ export function RaceTrack({ cars }: { cars: CarDTO[] }) {
                   )}
                 </div>
               </div>
-
-              {/* Track */}
-              <div className="relative h-9">
-                {/* Rail */}
-                <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
-                {/* Start line */}
-                <div className="absolute bottom-0 left-0 top-0 w-px bg-border" />
-                {/* Finish line */}
-                <div className="absolute bottom-0 right-0 top-0 flex w-px items-center bg-foreground">
-                  <Flag className="absolute -right-0.5 -top-3 h-3.5 w-3.5 text-foreground" />
-                </div>
-                {/* Travelling dot */}
-                <div
-                  className={cn(
-                    "absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 rounded-full ring-2 ring-background",
-                    phase === "running" && "shadow-lg"
-                  )}
-                  style={{
-                    left: 0,
-                    backgroundColor: color,
-                    transform: `translate(${p * travel}px, -50%)`,
-                  }}
-                />
-              </div>
+              {dot}
             </div>
           );
         })}
       </div>
 
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-        {single
-          ? "The dot crosses in the car's real 0–100 time."
-          : "All cars launch together in real time — quickest to 100 km/h wins."}
+        {caption}
       </p>
     </div>
   );
