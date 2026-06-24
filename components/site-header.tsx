@@ -30,7 +30,12 @@ export function SiteHeader() {
           {authed && (
             <>
               <span className="mx-1.5 h-5 w-px bg-border" aria-hidden />
-              <Button asChild size="sm">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="font-mono text-[11px] font-normal uppercase tracking-[0.18em] shadow-none transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+              >
                 <Link href="/cars/new" aria-label="Add car">
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Add Car</span>
