@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, AlertTriangle, Flag } from "lucide-react";
 import { getRankedCars } from "@/lib/cars";
 import { leaderboardStats, type LeaderboardStats } from "@/lib/stats";
 import { BarRow } from "@/components/viz/bar-row";
@@ -86,6 +86,15 @@ function NumbersBody({ cars, stats }: { cars: CarDTO[]; stats: LeaderboardStats 
       >
         <div className="mb-10 max-w-3xl">
           <StaticDistribution cars={cars} domain={domain} leaderId={leaderId} />
+          <div className="mt-3 flex justify-end">
+            <Link
+              href="/race?all=1"
+              className="group inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Flag className="h-3.5 w-3.5" /> Watch them race
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </div>
         <div className="max-w-3xl">
           {stats.bands.map((b, i) => (

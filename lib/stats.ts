@@ -142,11 +142,17 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
     .map((d) => cat(`${d}s`, (c) => Math.floor(c.modelYear / 10) * 10 === d))
     .filter(notNull);
 
-  // Engine-size bands. engineSize === 0 stands in for electric / no displacement.
+  // Engine-size bands, broken out finely at the low end since small-displacement
+  // cars (660cc kei, 1.0–1.3 L) dominate the local fleet. engineSize === 0 stands
+  // in for electric / no displacement. Empty bands drop out below (`cat` returns
+  // null), so the segments only appear when the fleet actually has cars in them.
   const ENGINE_BANDS: { label: string; test: (e: number) => boolean }[] = [
     { label: "Electric / none", test: (e) => e === 0 },
-    { label: "Up to 1.5 L", test: (e) => e > 0 && e <= 1.5 },
-    { label: "1.5 to 2.0 L", test: (e) => e > 1.5 && e <= 2.0 },
+    { label: "Up to 0.8 L", test: (e) => e > 0 && e <= 0.8 },
+    { label: "0.8 to 1.0 L", test: (e) => e > 0.8 && e <= 1.0 },
+    { label: "1.0 to 1.3 L", test: (e) => e > 1.0 && e <= 1.3 },
+    { label: "1.3 to 1.6 L", test: (e) => e > 1.3 && e <= 1.6 },
+    { label: "1.6 to 2.0 L", test: (e) => e > 1.6 && e <= 2.0 },
     { label: "2.0 to 3.0 L", test: (e) => e > 2.0 && e <= 3.0 },
     { label: "Over 3.0 L", test: (e) => e > 3.0 },
   ];
