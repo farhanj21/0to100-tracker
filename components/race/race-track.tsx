@@ -34,6 +34,28 @@ function laneColor(i: number, count: number, spread: boolean): string {
   return `hsl(${hue} 70% 50%)`;
 }
 
+/**
+ * Drag-race launch physics. The rAF clock gives each dot a time fraction
+ * `t = elapsed / T` (T = the car's real 0–100 time). We don't move the dot by
+ * `t` directly — that's constant speed. Instead a concave velocity curve
+ * `v(t) = 1 − (1−t)^LAUNCH` models a hard launch easing toward 100 km/h, and the
+ * dot's screen position is the integral of that velocity (distance covered).
+ * Both are 0 at t=0 and exactly 1 at t=1, so every real 0–100 time is preserved
+ * and `distFrac′ ∝ speedFrac` — the dot's on-screen speed IS its velocity.
+ */
+const LAUNCH = 2.2; // launch accel ≈ LAUNCH× the average; >1 = harder off the line
+
+/** Instantaneous speed as a fraction of 100 km/h at time-fraction t (0..1). */
+function speedFrac(t: number): number {
+  return 1 - Math.pow(1 - t, LAUNCH);
+}
+
+/** Distance covered as a fraction of the whole run at time-fraction t (0..1). */
+function distFrac(t: number): number {
+  const k = LAUNCH;
+  return ((k + 1) * t + Math.pow(1 - t, k + 1) - 1) / k;
+}
+
 type Phase = "idle" | "running" | "done";
 
 /**
@@ -334,11 +356,12 @@ function RaceGraph({
           {/* Columns — one car each; the dot climbs from 0 → 100 km/h */}
           <div className="absolute inset-0 flex items-stretch">
             {cars.map((car, i) => {
-              const p = progress[i] ?? 0; // also the speed fraction (0–1)
+              const p = progress[i] ?? 0; // time fraction (0–1)
               const finished = p >= 1;
               const isWinner = i === winnerIdx;
               const color = laneColor(i, cars.length, true);
-              const at = `${p * 100}%`;
+              // Y is the car's instantaneous speed (concave launch curve).
+              const at = `${speedFrac(p) * 100}%`;
 
               return (
                 <div
@@ -563,7 +586,7 @@ function RaceLanesMini({
       <div className="divide-y divide-border/60 border-y border-border">
         {cars.map((car, i) => {
           const p = progress[i] ?? 0;
-          const speed = Math.round(p * 100);
+          const speed = Math.round(speedFrac(p) * 100);
           const finished = p >= 1;
           const isWinner = i === winnerIdx;
           const color = laneColor(i, cars.length, true);
@@ -602,7 +625,7 @@ function RaceLanesMini({
                     width: DOT,
                     height: DOT,
                     backgroundColor: color,
-                    transform: `translate(${p * travel}px, -50%)`,
+                    transform: `translate(${distFrac(p) * travel}px, -50%)`,
                   }}
                 />
               </div>
@@ -653,7 +676,7 @@ function Lanes({
       <div className="space-y-3">
         {cars.map((car, i) => {
           const p = progress[i] ?? 0;
-          const speed = Math.round(p * 100);
+          const speed = Math.round(speedFrac(p) * 100);
           const finished = p >= 1;
           const isWinner = !single && finished && i === winnerIdx;
           const color = laneColor(i, cars.length, false);
@@ -712,7 +735,7 @@ function Lanes({
                     width: DOT,
                     height: DOT,
                     backgroundColor: color,
-                    transform: `translate(${p * travel}px, -50%)`,
+                    transform: `translate(${distFrac(p) * travel}px, -50%)`,
                   }}
                 />
               </div>
