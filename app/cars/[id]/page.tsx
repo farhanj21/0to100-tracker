@@ -11,6 +11,7 @@ import {
   Zap,
   Hash,
   Check,
+  Flag,
 } from "lucide-react";
 import { getCarById, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
@@ -142,6 +143,12 @@ export default async function CarDetailPage({
                 </>
               )}
             </p>
+
+            <Button asChild variant="outline" size="sm" className="mt-6 self-start">
+              <Link href={`/race?ids=${car.id}`}>
+                <Flag className="h-4 w-4" /> Visualize 0–100
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

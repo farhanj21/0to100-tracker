@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { SearchX, LayoutList, Table2, GitCompareArrows, X } from "lucide-react";
+import { SearchX, LayoutList, Table2, GitCompareArrows, Flag, X } from "lucide-react";
 import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
@@ -120,6 +120,11 @@ export function Leaderboard({
     router.push(`/compare?ids=${selectedIds.join(",")}`);
   }
 
+  function goRace() {
+    if (selectedIds.length < 1) return;
+    router.push(`/race?ids=${selectedIds.join(",")}`);
+  }
+
   return (
     <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
@@ -170,7 +175,7 @@ export function Leaderboard({
 
         {compareMode && (
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Pick 2–3 cars to compare.
+            Pick 1–3 cars to race, or 2–3 to compare.
           </p>
         )}
 
@@ -213,6 +218,7 @@ export function Leaderboard({
         onRemove={toggleSelect}
         onClear={() => setSelectedIds([])}
         onCompare={goCompare}
+        onRace={goRace}
       />
     </div>
   );
@@ -224,12 +230,14 @@ function CompareBar({
   onRemove,
   onClear,
   onCompare,
+  onRace,
 }: {
   cars: CarDTO[];
   open: boolean;
   onRemove: (id: string) => void;
   onClear: () => void;
   onCompare: () => void;
+  onRace: () => void;
 }) {
   return (
     <AnimatePresence>
@@ -271,6 +279,16 @@ function CompareBar({
               >
                 Clear
               </button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onRace}
+                disabled={cars.length < 1}
+              >
+                <Flag className="h-4 w-4" />
+                Race {cars.length}
+              </Button>
               <Button
                 type="button"
                 size="sm"
