@@ -64,14 +64,14 @@ export function CompareView({
 
   return (
     <div className="overflow-x-auto border border-border bg-card">
-      <table className="w-full min-w-[640px] border-collapse">
+      <table className="w-full min-w-[460px] border-collapse sm:min-w-[640px]">
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 w-28 bg-card sm:w-40" />
+            <th className="sticky left-0 z-10 w-20 bg-card sm:w-40" />
             {cars.map((car) => (
               <th
                 key={car.id}
-                className="border-l border-border p-4 align-top"
+                className="border-l border-border p-2.5 align-top sm:p-4"
                 style={{ width: `${80 / cars.length}%` }}
               >
                 <Link href={`/cars/${car.slug}`} className="group block text-left">
@@ -81,10 +81,10 @@ export function CompareView({
                     interactive
                     className="aspect-[16/10] w-full rounded-none bg-secondary ring-1 ring-border"
                   />
-                  <span className="mt-3 inline-block bg-primary px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                  <span className="mt-2 inline-block bg-primary px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-primary-foreground sm:mt-3 sm:px-2 sm:text-[10px]">
                     No.{String(car.position).padStart(2, "0")}
                   </span>
-                  <p className="mt-2 font-display text-xl leading-tight transition-colors group-hover:text-primary">
+                  <p className="mt-1.5 font-display text-base leading-tight transition-colors group-hover:text-primary sm:mt-2 sm:text-xl">
                     {car.manufacturer}{" "}
                     <span className="text-muted-foreground">
                       {car.carModel}
@@ -117,14 +117,14 @@ export function CompareView({
               <tr className="border-t border-border">
                 <th
                   scope="row"
-                  className="sticky left-0 z-10 bg-card px-4 py-3 text-left align-top font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+                  className="sticky left-0 z-10 bg-card px-2.5 py-2.5 text-left align-top font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:px-4 sm:py-3 sm:text-[11px]"
                 >
                   Features
                 </th>
                 {cars.map((car) => (
                   <td
                     key={car.id}
-                    className="border-l border-border px-4 py-3 align-top"
+                    className="border-l border-border px-2.5 py-2.5 align-top sm:px-4 sm:py-3"
                   >
                     {car.features.length > 0 ? (
                       <ul className="space-y-1.5">
@@ -163,7 +163,7 @@ function SectionRow({
     <tr>
       <td
         colSpan={span}
-        className="border-y border-border bg-secondary/40 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+        className="border-y border-border bg-secondary/40 px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-4 sm:text-[11px] sm:tracking-[0.22em]"
       >
         <span className="inline-flex items-center gap-2">
           <span aria-hidden className="h-3 w-1.5 bg-primary" />
@@ -179,7 +179,7 @@ function DataRow({ row }: { row: Row }) {
     <tr className="border-t border-border">
       <th
         scope="row"
-        className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+        className="sticky left-0 z-10 bg-card px-2.5 py-2.5 text-left font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground sm:px-4 sm:py-3 sm:text-[11px] sm:tracking-[0.14em]"
       >
         {row.label}
       </th>
@@ -187,7 +187,7 @@ function DataRow({ row }: { row: Row }) {
         <td
           key={i}
           className={cn(
-            "border-l border-border px-4 py-3 text-sm",
+            "border-l border-border px-2.5 py-2.5 text-[13px] sm:px-4 sm:py-3 sm:text-sm",
             cell.best
               ? "bg-primary/5 font-semibold text-primary"
               : "font-medium"
