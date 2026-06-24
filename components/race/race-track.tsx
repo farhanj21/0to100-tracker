@@ -586,7 +586,10 @@ function RaceLanesMini({
       <div className="divide-y divide-border/60 border-y border-border">
         {cars.map((car, i) => {
           const p = progress[i] ?? 0;
-          const speed = Math.round(speedFrac(p) * 100);
+          // Cap at 99 while running: the curve nears 100 asymptotically, so a
+          // plain round would read "100" well before the dot reaches the line.
+          // 100 is implied by the finish (which swaps the readout to the time).
+          const speed = Math.min(99, Math.floor(speedFrac(p) * 100));
           const finished = p >= 1;
           const isWinner = i === winnerIdx;
           const color = laneColor(i, cars.length, true);
@@ -676,7 +679,10 @@ function Lanes({
       <div className="space-y-3">
         {cars.map((car, i) => {
           const p = progress[i] ?? 0;
-          const speed = Math.round(speedFrac(p) * 100);
+          // Cap at 99 while running: the curve nears 100 asymptotically, so a
+          // plain round would read "100" well before the dot reaches the line.
+          // 100 is implied by the finish (which swaps the readout to the time).
+          const speed = Math.min(99, Math.floor(speedFrac(p) * 100));
           const finished = p >= 1;
           const isWinner = !single && finished && i === winnerIdx;
           const color = laneColor(i, cars.length, false);
