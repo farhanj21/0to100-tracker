@@ -103,9 +103,10 @@ export function RaceTrack({
   // Bumping this re-arms the effect below, restarting the run. Starts at 1 so the
   // race auto-plays on mount — landing on the page shows the dots travelling.
   const [runId, setRunId] = useState(1);
-  // "Race all" can be experienced two ways; the graph leads since it conveys
-  // speed best, but the dense lanes give the familiar side-by-side dot race.
-  const [graphView, setGraphView] = useState(true);
+  // "Race all" can be experienced two ways; the dense lanes lead (the dot's
+  // motion is true velocity, so it keeps accelerating), with the speed-vs-time
+  // graph a click away.
+  const [graphView, setGraphView] = useState(false);
   // "Race all" only: ids the user has unchecked, so they sit out the race.
   const [excluded, setExcluded] = useState<Set<string>>(() => new Set());
   const [pickerOpen, setPickerOpen] = useState(false);
