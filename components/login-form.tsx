@@ -1,25 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+const CODE_LENGTH = 4;
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
 
-  const [passcode, setPasscode] = useState("");
+  const [digits, setDigits] = useState<string[]>(() =>
+    Array.from({ length: CODE_LENGTH }, () => "")
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+
+  const passcode = digits.join("");
+
+  function focusInput(index: number) {
+    inputsRef.current[index]?.focus();
+    inputsRef.current[index]?.select();
+  }
+
+  function setDigitsAndClearError(nextDigits: string[]) {
+    setDigits(nextDigits);
+    if (error) setError(null);
+  }
+
+  function handleChange(index: number, value: string) {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    if (!digit) return;
+    const nextDigits = [...digits];
+    nextDigits[index] = digit;
+    setDigitsAndClearError(nextDigits);
+    if (index < CODE_LENGTH - 1) focusInput(index + 1);
+  }
+
+  function handleKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const nextDigits = [...digits];
+      if (nextDigits[index]) {
+        nextDigits[index] = "";
+        setDigitsAndClearError(nextDigits);
+      } else if (index > 0) {
+        nextDigits[index - 1] = "";
+        setDigitsAndClearError(nextDigits);
+        focusInput(index - 1);
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      focusInput(index - 1);
+    } else if (e.key === "ArrowRight" && index < CODE_LENGTH - 1) {
+      e.preventDefault();
+      focusInput(index + 1);
+    }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
+    if (!pasted) return;
+    const nextDigits = Array.from({ length: CODE_LENGTH }, (_, i) => pasted[i] ?? "");
+    setDigitsAndClearError(nextDigits);
+    focusInput(Math.min(pasted.length, CODE_LENGTH - 1));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!passcode) return;
+    if (passcode.length !== CODE_LENGTH) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -39,6 +95,8 @@ export function LoginForm() {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
       setSubmitting(false);
+      setDigits(Array.from({ length: CODE_LENGTH }, () => ""));
+      focusInput(0);
     }
   }
 
@@ -56,27 +114,43 @@ export function LoginForm() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="passcode">Passcode</Label>
-            <Input
-              id="passcode"
-              type="password"
-              autoFocus
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={passcode}
-              onChange={(e) => {
-                setPasscode(e.target.value);
-                if (error) setError(null);
-              }}
-            />
-            {error && <p className="text-xs text-destructive">{error}</p>}
+          <div className="space-y-2">
+            <Label htmlFor="passcode-0">Passcode</Label>
+            <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+              {digits.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`passcode-${index}`}
+                  ref={(el) => {
+                    inputsRef.current[index] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete={index === 0 ? "one-time-code" : "off"}
+                  maxLength={1}
+                  autoFocus={index === 0}
+                  aria-label={`Digit ${index + 1}`}
+                  value={digit}
+                  onChange={(e) => handleChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  onFocus={(e) => e.target.select()}
+                  className={cn(
+                    "h-16 w-14 rounded-xl border border-input bg-background text-center text-2xl font-semibold transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring",
+                    "disabled:cursor-not-allowed disabled:opacity-50",
+                    error && "border-destructive"
+                  )}
+                  disabled={submitting}
+                />
+              ))}
+            </div>
+            {error && <p className="text-center text-xs text-destructive">{error}</p>}
           </div>
 
           <Button
             type="submit"
             className="w-full"
-            disabled={submitting || !passcode}
+            disabled={submitting || passcode.length !== CODE_LENGTH}
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
