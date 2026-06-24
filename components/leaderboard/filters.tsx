@@ -56,12 +56,12 @@ export function Filters({
     JSON.stringify(value) !== JSON.stringify(EMPTY_FILTERS);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3 backdrop-blur sm:p-4">
+    <div className="border border-border bg-card p-3 sm:p-4">
       <div className="grid grid-cols-2 gap-3 lg:flex lg:flex-row lg:items-end lg:gap-4">
         {/* Search */}
         <div className="col-span-2 lg:flex-1 lg:min-w-[180px]">
-          <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Search className="h-3.5 w-3.5" /> Search
+          <label className="mb-1.5 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <Search className="h-3 w-3" /> Search
           </label>
           <Input
             placeholder="Manufacturer or model…"
@@ -104,7 +104,7 @@ export function Filters({
 
         {/* Year range */}
         <div className="col-span-2 sm:col-span-1">
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+          <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             Year range
           </label>
           <div className="flex items-center gap-1.5">
@@ -129,23 +129,23 @@ export function Filters({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-          Showing{" "}
-          <span className="font-semibold text-foreground tabular-nums">
+      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+        <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <SlidersHorizontal className="h-3 w-3" />
+          <span className="font-bold text-foreground tabular-nums">
             {resultCount}
-          </span>{" "}
-          of <span className="tabular-nums">{totalCount}</span> cars
+          </span>
+          <span>/</span>
+          <span className="tabular-nums">{totalCount}</span> showing
         </p>
         {isDirty && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onChange(EMPTY_FILTERS)}
-            className="h-8 text-muted-foreground"
+            className="h-8 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
           >
-            <X className="h-3.5 w-3.5" /> Clear filters
+            <X className="h-3 w-3" /> Clear
           </Button>
         )}
       </div>
@@ -166,7 +166,7 @@ function FilterSelect({
 }) {
   return (
     <div className="w-full lg:min-w-[150px]">
-      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+      <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </label>
       <Select value={value} onValueChange={onValueChange}>

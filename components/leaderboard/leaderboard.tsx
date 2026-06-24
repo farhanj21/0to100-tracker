@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SearchX, LayoutList, Table2 } from "lucide-react";
-import { Podium } from "@/components/leaderboard/podium";
+import { LeaderHero } from "@/components/leaderboard/leader-hero";
 import { LeaderboardRow } from "@/components/leaderboard/leaderboard-row";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import {
@@ -54,12 +54,25 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
     // Note: each car keeps its true global `position` (assigned server-side).
   }, [cars, filters]);
 
+  // The cover hero is always the true global #1; the board lists the full
+  // ranking, leader included, so the table/cards are a complete grid.
+  const hero = cars[0];
+  const leaderTime = hero.zeroToHundred;
+  const marginToNext = cars[1] ? cars[1].zeroToHundred - leaderTime : 0;
+  const boardCars = filtered;
+
   return (
-    <div className="space-y-8">
-      {/* Podium always reflects the true global top 3, independent of filters. */}
-      <Podium cars={cars} />
+    <div className="space-y-10">
+      <LeaderHero car={hero} marginToNext={marginToNext} />
 
       <section className="space-y-4">
+        <div className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
+          <h2 className="font-display text-3xl">The Board</h2>
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            {cars.length} cars, quickest first
+          </span>
+        </div>
+
         <Filters
           value={filters}
           onChange={setFilters}
@@ -72,15 +85,19 @@ export function Leaderboard({ cars }: { cars: CarDTO[] }) {
           <ViewToggle view={view} onChange={setView} />
         </div>
 
-        {filtered.length === 0 ? (
+        {boardCars.length === 0 ? (
           <EmptyResults />
         ) : view === "table" ? (
-          <LeaderboardTable cars={filtered} />
+          <LeaderboardTable cars={boardCars} />
         ) : (
-          <motion.div layout className="space-y-2.5">
+          <motion.div layout className="border-t border-border">
             <AnimatePresence initial={false}>
-              {filtered.map((car) => (
-                <LeaderboardRow key={car.id} car={car} />
+              {boardCars.map((car) => (
+                <LeaderboardRow
+                  key={car.id}
+                  car={car}
+                  gap={car.zeroToHundred - leaderTime}
+                />
               ))}
             </AnimatePresence>
           </motion.div>
@@ -102,7 +119,7 @@ function ViewToggle({
     { value: "table", label: "Table", icon: Table2 },
   ];
   return (
-    <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+    <div className="inline-flex divide-x divide-border border border-border bg-card">
       {options.map((opt) => {
         const active = view === opt.value;
         return (
@@ -112,13 +129,13 @@ function ViewToggle({
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              "inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
               active
-                ? "bg-secondary text-foreground"
+                ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <opt.icon className="h-3.5 w-3.5" />
+            <opt.icon className="h-3 w-3" />
             {opt.label}
           </button>
         );
@@ -129,11 +146,14 @@ function ViewToggle({
 
 function EmptyResults() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
+    <div className="flex flex-col items-center justify-center border border-dashed border-border bg-card py-16 text-center">
       <SearchX className="mb-3 h-8 w-8 text-muted-foreground" />
-      <p className="font-medium">No cars match your filters</p>
-      <p className="text-sm text-muted-foreground">
-        Try widening the year range or clearing filters.
+      <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+        Nothing matches
+      </p>
+      <p className="font-display text-2xl">No cars on this grid</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Widen the year range or clear the filters to see more.
       </p>
     </div>
   );

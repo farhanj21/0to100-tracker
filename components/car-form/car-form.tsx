@@ -141,7 +141,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
           }. Add the 0–100 time to finish.`
         );
       } else {
-        toast.message("No specs found — enter them manually.");
+        toast.message("Nothing came back. Enter the specs by hand.");
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Lookup failed.");
@@ -191,7 +191,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
           <Field
             label="Variant / trim"
             error={errors.variant?.message}
-            hint="Optional — sharpens the web lookup (e.g. Turbo S, GLI, Altis Grande)."
+            hint="Optional. A trim level sharpens the lookup (e.g. Turbo S, GLI, Altis Grande)."
           >
             <Input placeholder="e.g. Turbo S" {...register("variant")} />
           </Field>
@@ -292,7 +292,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
       {/* Extra specs & features */}
       <Section
         title="Extra specs & features"
-        subtitle="Full spec sheet shown on the car page — auto-filled and fully editable."
+        subtitle="The spec sheet your car page shows. Auto-fill drafts it; every field stays editable."
       >
         <ExtraSpecsEditor
           specs={specsValue}
@@ -345,9 +345,9 @@ function SpecShowcase({ specs }: { specs: CarSpecsResult }) {
   const featureCount = specs.features.length;
 
   return (
-    <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+    <div className="mt-4 rounded-sm border border-primary/30 bg-primary/5 p-4 text-sm">
       <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-        <Sparkles className="h-3.5 w-3.5" /> Auto-filled — review before saving
+        <Sparkles className="h-3.5 w-3.5" /> Drafted by auto-fill. Give it a once-over before saving.
       </div>
 
       <p className="mt-2 text-muted-foreground">
@@ -366,8 +366,8 @@ function SpecShowcase({ specs }: { specs: CarSpecsResult }) {
           0–100 reference:{" "}
           <span className="font-mono font-medium text-foreground">
             {specs.zeroToHundredHint.toFixed(1)} s
-          </span>{" "}
-          — enter the official figure in the Performance field.
+          </span>
+          . Enter the official figure in the Performance field.
         </p>
       )}
 
@@ -381,7 +381,7 @@ function SpecShowcase({ specs }: { specs: CarSpecsResult }) {
       )}
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        Values are approximate (free AI lookup) — double-check before saving.
+        Ballpark figures from an AI lookup. Worth a quick sanity check before saving.
       </p>
     </div>
   );
@@ -397,13 +397,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-border bg-card/50 p-5 sm:p-6">
+    <section className="border border-border bg-card p-5 sm:p-6">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">
+        <h2 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground">
+          <span aria-hidden className="h-3 w-1.5 bg-primary" />
           {title}
         </h2>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
         )}
       </div>
       {children}

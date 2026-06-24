@@ -13,8 +13,9 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
 import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
+import { BlurUpImage } from "@/components/blur-up-image";
 import type { MediaDTO } from "@/lib/types";
 
 export function Gallery({
@@ -81,7 +82,7 @@ export function Gallery({
 
   if (media.length === 0) {
     return (
-      <div className="flex aspect-video w-full flex-col items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground">
+      <div className="flex aspect-video w-full flex-col items-center justify-center border border-dashed border-border text-muted-foreground">
         <ImageOff className="mb-2 h-7 w-7" />
         <p className="text-sm">No media yet</p>
       </div>
@@ -93,17 +94,18 @@ export function Gallery({
 
   return (
     <div className="space-y-3">
-      {/* Hero (current thumbnail) */}
+      {/* Hero (current thumbnail) — taller box + contain so portrait shots
+          show in full, large, instead of being cropped small. */}
       <button
         type="button"
         onClick={() => setActive(0)}
-        className="group relative block aspect-video w-full overflow-hidden rounded-xl ring-1 ring-border"
+        className="group relative block aspect-[4/3] w-full overflow-hidden bg-secondary ring-1 ring-border"
       >
-        <MediaTile media={hero} />
+        <MediaTile media={hero} contain />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         {canManage && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-primary/90 px-2 py-1 text-xs font-medium text-primary-foreground shadow">
-            <Star className="h-3.5 w-3.5 fill-current" /> Leaderboard thumbnail
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+            <Star className="h-3 w-3 fill-current" /> Leaderboard thumbnail
           </span>
         )}
       </button>
@@ -114,7 +116,7 @@ export function Gallery({
           {rest.map((m, i) => (
             <div
               key={`${m.path}-${i}`}
-              className="group relative aspect-square overflow-hidden rounded-lg ring-1 ring-border transition hover:ring-primary"
+              className="group relative aspect-square overflow-hidden rounded-sm ring-1 ring-border transition hover:ring-primary"
             >
               <button
                 type="button"
@@ -157,7 +159,7 @@ export function Gallery({
           >
             <button
               onClick={close}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20"
               aria-label="Close"
             >
               <X className="h-5 w-5" />
@@ -170,14 +172,14 @@ export function Gallery({
                 onClick={(e) => e.stopPropagation()}
               >
                 {active === 0 ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                    <Star className="h-3.5 w-3.5 fill-current" /> Current thumbnail
+                  <span className="inline-flex items-center gap-1.5 rounded-sm bg-primary px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+                    <Star className="h-3 w-3 fill-current" /> Current thumbnail
                   </span>
                 ) : (
                   <button
                     onClick={() => setAsThumbnail(media[active].path)}
                     disabled={pending !== null}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
                   >
                     {pending === media[active].path ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -233,7 +235,7 @@ export function Gallery({
               )}
             </motion.div>
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs text-white tabular-nums">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-sm bg-white/10 px-3 py-1 font-mono text-xs text-white tabular-nums">
               {active + 1} / {media.length}
             </div>
           </motion.div>
@@ -243,15 +245,39 @@ export function Gallery({
   );
 }
 
-function MediaTile({ media, thumb }: { media: MediaDTO; thumb?: boolean }) {
+function MediaTile({
+  media,
+  thumb,
+  contain,
+}: {
+  media: MediaDTO;
+  thumb?: boolean;
+  /** Fit the whole image with a blurred fill behind it (no crop). */
+  contain?: boolean;
+}) {
   if (media.type === "image") {
+    if (contain) {
+      return (
+        <BlurUpImage
+          src={cloudinaryThumb(media.path, 720, 540, "fit")}
+          blurSrc={cloudinaryBlurFill(media.path, 64, 48)}
+          alt=""
+          blurClassName="scale-110"
+          className="relative h-full w-full object-contain [filter:contrast(1.04)_saturate(1.06)]"
+        />
+      );
+    }
+    // Big cover image gets a blur-up; the tiny 120px thumbs just fade in
+    // (a blur placeholder there would only double the request for no gain).
+    const src = thumb
+      ? cloudinaryThumb(media.path, 120, 120, "fill")
+      : cloudinaryThumb(media.path, 640, 360, "fill");
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={media.path}
+      <BlurUpImage
+        src={src}
+        blurSrc={thumb ? null : cloudinaryBlurFill(media.path, 48, 27)}
         alt=""
-        className="h-full w-full object-cover"
-        loading="lazy"
+        className="h-full w-full object-cover [filter:contrast(1.04)_saturate(1.06)]"
       />
     );
   }
@@ -299,7 +325,7 @@ function NavButton({
     <button
       onClick={onClick}
       className={cn(
-        "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20",
+        "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20",
         side === "left" ? "left-4" : "right-4"
       )}
       aria-label={side === "left" ? "Previous" : "Next"}

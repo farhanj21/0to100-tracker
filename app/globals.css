@@ -3,38 +3,68 @@
 @tailwind utilities;
 
 @layer base {
+  /* ☀ Light — cool paper, true ink, editorial cobalt used in solid blocks. */
   :root {
-    /* Dark premium automotive theme — near-black charcoal + electric blue accent. */
-    --background: 222 28% 6%;
-    --foreground: 210 20% 96%;
+    --background: 48 14% 92%;
+    --foreground: 48 14% 7%;
 
-    --card: 222 24% 9%;
-    --card-foreground: 210 20% 96%;
+    --card: 44 24% 96%;
+    --card-foreground: 48 14% 7%;
 
-    --popover: 222 26% 8%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 44 24% 96%;
+    --popover-foreground: 48 14% 7%;
 
-    /* Electric blue accent */
-    --primary: 209 100% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 223 72% 43%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 222 18% 16%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary: 44 14% 88%;
+    --secondary-foreground: 48 14% 12%;
 
-    --muted: 222 16% 14%;
-    --muted-foreground: 215 14% 60%;
+    --muted: 44 14% 88%;
+    --muted-foreground: 45 7% 40%;
 
-    --accent: 209 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 223 72% 43%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 42 14% 80%;
+    --input: 42 14% 80%;
+    --ring: 223 72% 43%;
+
+    --radius: 0.2rem;
+  }
+
+  /* ☾ Dark — warm espresso charcoal (not near-black), cream type, grain. */
+  .dark {
+    --background: 36 18% 9%;
+    --foreground: 40 28% 91%;
+
+    --card: 36 18% 11%;
+    --card-foreground: 40 28% 91%;
+
+    --popover: 36 18% 11%;
+    --popover-foreground: 40 28% 91%;
+
+    --primary: 221 78% 62%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 36 16% 15%;
+    --secondary-foreground: 40 28% 91%;
+
+    --muted: 36 16% 15%;
+    --muted-foreground: 38 11% 56%;
+
+    --accent: 221 78% 62%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 16% 18%;
-    --input: 222 16% 18%;
-    --ring: 209 100% 55%;
-
-    --radius: 0.65rem;
+    --border: 36 18% 17%;
+    --input: 36 18% 17%;
+    --ring: 221 78% 62%;
   }
 }
 
@@ -44,57 +74,61 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    background-image:
-      radial-gradient(
-        1200px 600px at 80% -10%,
-        hsl(209 100% 55% / 0.08),
-        transparent
-      ),
-      radial-gradient(
-        900px 500px at -10% 10%,
-        hsl(209 100% 55% / 0.05),
-        transparent
-      );
-    background-attachment: fixed;
   }
+
 }
 
 @layer utilities {
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
-  /* Subtle moving sheen used on podium rows */
-  .sheen {
-    position: relative;
-    overflow: hidden;
-  }
-  .sheen::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(0 0% 100% / 0.06),
-      transparent
-    );
-    animation: shimmer 3.5s infinite;
+  /* Hairline rule used in editorial lists/spec boxes. */
+  .rule {
+    border-color: hsl(var(--border));
   }
 }
 
-/* Custom scrollbar for the dark theme */
+/* Film grain — gives the dark theme a crafted, cinematic surface instead of a
+   flat default-dark look. Subtle in light, stronger in dark. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .grain {
+  opacity: 0.07;
+}
+/* Theme toggle crossfade via the View Transitions API: one GPU-composited
+   fade of the whole document instead of transitioning every node (which
+   janked with the grain layer). Unsupported browsers flip instantly. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.32s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Themed scrollbar driven by tokens. */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(222 28% 6%);
+  background: hsl(var(--background));
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(222 16% 22%);
+  background: hsl(var(--border));
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(222 16% 30%);
+  background: hsl(var(--muted-foreground) / 0.5);
 }

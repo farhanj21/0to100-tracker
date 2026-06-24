@@ -8,7 +8,7 @@ import { isAuthenticated } from "@/lib/auth";
 import type { CarInput } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Edit car — 0–100 Tracker" };
+export const metadata = { title: "Edit car · 0–100" };
 
 export default async function EditCarPage({
   params,
@@ -44,7 +44,7 @@ export default async function EditCarPage({
         >
           <ArrowLeft className="h-4 w-4" /> Back to car
         </Link>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">Edit car</h1>
+        <h1 className="mt-3 font-display text-4xl tracking-tight">Edit car</h1>
         <p className="mt-1 text-muted-foreground">{carTitle(car)}</p>
       </div>
 

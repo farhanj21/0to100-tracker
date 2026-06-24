@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Lock, LogIn } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,12 +44,12 @@ export function LoginForm() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/30">
-            <Lock className="h-5 w-5" />
-          </span>
-          <h1 className="text-xl font-bold tracking-tight">Admin access</h1>
+      <div className="border border-border bg-card p-6 sm:p-8">
+        <div className="mb-6 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Restricted · 0–100
+          </p>
+          <h1 className="mt-1.5 font-display text-3xl tracking-tight">Admin access</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the passcode to add, edit, or delete cars.
           </p>

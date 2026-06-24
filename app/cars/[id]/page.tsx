@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   ArrowLeft,
   Pencil,
-  Trophy,
   Calendar,
   Gauge,
   Wind,
@@ -13,20 +12,13 @@ import {
   Hash,
   Check,
 } from "lucide-react";
-import { getCarById, getCarCount } from "@/lib/cars";
+import { getCarById, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
-import { RankBadge } from "@/components/leaderboard/rank-badge";
+import { CountUp } from "@/components/count-up";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  cn,
-  formatTime,
-  formatEngine,
-  carTitle,
-  ordinal,
-} from "@/lib/utils";
+import { formatEngine, carTitle, ordinal } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +28,8 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const car = await getCarById(params.id);
-  if (!car) return { title: "Car not found — 0–100 Tracker" };
-  return { title: `${carTitle(car)} — 0–100 Tracker` };
+  if (!car) return { title: "Car not found · 0–100" };
+  return { title: `${carTitle(car)} · 0–100` };
 }
 
 export default async function CarDetailPage({
@@ -45,14 +37,19 @@ export default async function CarDetailPage({
 }: {
   params: { id: string };
 }) {
-  const [car, total] = await Promise.all([
-    getCarById(params.id),
-    getCarCount(),
-  ]);
+  const ranked = await getRankedCars();
+  const car = ranked.find((c) => c.id === params.id);
   if (!car) notFound();
 
+  const total = ranked.length;
+  const leaderTime = ranked[0]?.zeroToHundred ?? car.zeroToHundred;
+  const gap = car.zeroToHundred - leaderTime;
+  const marginToNext =
+    car.position === 1 && ranked[1]
+      ? ranked[1].zeroToHundred - car.zeroToHundred
+      : 0;
+
   const authed = isAuthenticated();
-  const isPodium = car.position <= 3;
 
   const specs = [
     { icon: Calendar, label: "Model year", value: String(car.modelYear) },
@@ -85,79 +82,81 @@ export default async function CarDetailPage({
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-10">
         {/* Gallery — "Set as thumbnail" only available to admins */}
         <Gallery media={car.media} carId={authed ? car.id : undefined} />
 
-        {/* Summary */}
-        <div className="space-y-5">
-          <div
-            className={cn(
-              "rounded-xl border bg-card p-5",
-              isPodium ? "border-primary/40" : "border-border"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <RankBadge position={car.position} size="lg" />
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Global rank
-                </p>
-                <p className="text-lg font-semibold">
-                  {ordinal(car.position)}{" "}
-                  <span className="text-muted-foreground">
-                    of {total}
-                  </span>
-                </p>
-              </div>
-              {isPodium && (
-                <Trophy className="ml-auto h-6 w-6 text-gold" />
+        {/* Headline + stat — mirrors the home cover-story language. */}
+        <div className="flex flex-col justify-center">
+          <span className="self-start bg-primary px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
+            No.{String(car.position).padStart(2, "0")}
+          </span>
+
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Rank {ordinal(car.position)}{" "}
+            <span className="text-muted-foreground/50">of {total}</span>
+          </p>
+
+          <h1 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
+            {car.manufacturer}{" "}
+            <span className="text-muted-foreground">
+              {car.carModel}
+              {car.variant ? ` ${car.variant}` : ""}
+            </span>
+          </h1>
+
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
+            {car.transmission} · {car.powertrainType}
+          </p>
+
+          <div className="mt-7 border-t border-border pt-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+              0–100 km/h
+            </p>
+            <div className="-ml-1 mt-1 flex items-baseline gap-2">
+              <CountUp
+                value={car.zeroToHundred}
+                className="font-mono text-7xl font-bold leading-[0.8] tracking-tighter sm:text-8xl"
+              />
+              <span className="font-mono text-2xl text-muted-foreground">s</span>
+            </div>
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              {car.position === 1 ? (
+                marginToNext > 0.0001 ? (
+                  <>
+                    <span className="font-bold text-primary">
+                      {marginToNext.toFixed(2)} s
+                    </span>{" "}
+                    clear of P2
+                  </>
+                ) : (
+                  "Fastest on the board"
+                )
+              ) : (
+                <>
+                  <span className="font-bold text-primary">
+                    +{gap.toFixed(2)} s
+                  </span>{" "}
+                  off the lead
+                </>
               )}
-            </div>
-
-            <div className="mt-5 border-t border-border pt-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                0–100 km/h
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-5xl font-bold tabular-nums text-primary">
-                  {formatTime(car.zeroToHundred)}
-                </span>
-                <span className="text-lg text-muted-foreground">seconds</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {car.manufacturer}{" "}
-              <span className="text-muted-foreground">
-                {car.carModel}
-                {car.variant ? ` ${car.variant}` : ""}
-              </span>
-            </h1>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Badge variant="default">{car.powertrainType}</Badge>
-              <Badge variant="outline">{car.induction}</Badge>
-              <Badge variant="outline">{car.transmission}</Badge>
-            </div>
+            </p>
           </div>
         </div>
       </div>
 
       {/* Spec sheet */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
-          Spec sheet
-        </h2>
+        <SectionHeading>Spec sheet</SectionHeading>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {specs.map((spec) => (
             <div
               key={spec.label}
-              className="rounded-lg border border-border bg-card/50 p-4"
+              className="border border-border bg-card p-4"
             >
-              <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <spec.icon className="h-3.5 w-3.5" /> {spec.label}
+              <dt className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                <spec.icon className="h-3 w-3" /> {spec.label}
               </dt>
               <dd className="mt-1 font-medium">{spec.value}</dd>
             </div>
@@ -168,10 +167,8 @@ export default async function CarDetailPage({
       {/* Full specifications (extended, from auto-fill or manual entry) */}
       {car.specs.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
-            Full specifications
-          </h2>
-          <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+          <SectionHeading>Full specifications</SectionHeading>
+          <dl className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
             {car.specs.map((s, i) => (
               <div
                 key={`${s.label}-${i}`}
@@ -188,14 +185,12 @@ export default async function CarDetailPage({
       {/* Features */}
       {car.features.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
-            Features
-          </h2>
+          <SectionHeading>Features</SectionHeading>
           <ul className="flex flex-wrap gap-2">
             {car.features.map((f, i) => (
               <li
                 key={`${f}-${i}`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-sm"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-card px-2.5 py-1 text-sm"
               >
                 <Check className="h-3.5 w-3.5 text-primary" /> {f}
               </li>
@@ -204,5 +199,16 @@ export default async function CarDetailPage({
         </div>
       )}
     </div>
+  );
+}
+
+/** Editorial section label: mono caps on a hairline rule, led by a solid
+ *  solid accent tick (the recurring block motif). */
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-4 flex items-center gap-2 border-b border-border pb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground">
+      <span aria-hidden className="h-3 w-1.5 bg-primary" />
+      {children}
+    </h2>
   );
 }

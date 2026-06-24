@@ -30,3 +30,6 @@ next-env.d.ts
 # uploaded media (keep the folder, ignore contents)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# local design docs / specs
+/docs

@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageCropDialog } from "@/components/car-form/image-crop-dialog";
-import { cn } from "@/lib/utils";
+import { cn, cloudinaryThumb } from "@/lib/utils";
 import { extractYouTubeId, youTubeThumb } from "@/lib/youtube";
 import type { MediaDTO } from "@/lib/types";
 
@@ -194,7 +194,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           handleFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+          "flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 py-10 text-center transition-colors",
           dragOver
             ? "border-primary bg-primary/5"
             : "border-border hover:border-primary/50 hover:bg-secondary/30"
@@ -209,7 +209,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
           {uploading ? "Uploading…" : "Drop images or videos, or click to browse"}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          JPG, PNG, WebP, GIF · MP4, WebM, MOV — images can be cropped before upload
+          JPG, PNG, WebP, GIF · MP4, WebM, MOV. Crop images before they upload.
         </p>
         <input
           ref={inputRef}
@@ -261,7 +261,7 @@ export function MediaUploader({ value, onChange }: MediaUploaderProps) {
               {m.type === "image" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={m.path}
+                  src={cloudinaryThumb(m.path, 200, 200, "fill")}
                   alt="upload preview"
                   className="h-full w-full object-cover"
                 />
