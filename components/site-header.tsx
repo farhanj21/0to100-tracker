@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MainNav } from "@/components/main-nav";
 import { isAuthenticated } from "@/lib/auth";
 
 export function SiteHeader() {
@@ -10,7 +11,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container relative flex h-16 items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="group flex items-center gap-2.5" aria-label="0–100 home">
             <span
@@ -22,6 +23,13 @@ export function SiteHeader() {
           <span className="hidden border-l border-border pl-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:inline">
             Acceleration leaderboard
           </span>
+        </div>
+
+        {/* sm+: centered independently of the flanking logo/controls so it stays
+            optically centered regardless of their widths. Hidden on mobile to
+            keep the bar uncluttered. */}
+        <div className="absolute left-1/2 hidden -translate-x-1/2 sm:block">
+          <MainNav />
         </div>
 
         <div className="flex items-center gap-1">
