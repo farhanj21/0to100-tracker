@@ -36,6 +36,8 @@ export interface CarDTO {
   media: MediaDTO[];
   specs: SpecPair[];
   features: string[];
+  /** Free-form personal notes about the car. Empty string when none. */
+  notes: string;
   position: number;
   createdAt: string;
   updatedAt: string;

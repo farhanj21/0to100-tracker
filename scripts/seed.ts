@@ -23,12 +23,19 @@ import Car, { type ICar } from "../lib/models/Car";
 
 type SeedCar = Omit<
   ICar,
-  "createdAt" | "updatedAt" | "media" | "specs" | "features" | "variant"
+  | "createdAt"
+  | "updatedAt"
+  | "media"
+  | "specs"
+  | "features"
+  | "variant"
+  | "notes"
 > & {
   media?: ICar["media"];
   specs?: ICar["specs"];
   features?: ICar["features"];
   variant?: ICar["variant"];
+  notes?: ICar["notes"];
 };
 
 // A spread of real-world cars covering every enum value and a range of years.

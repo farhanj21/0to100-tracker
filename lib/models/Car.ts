@@ -35,6 +35,8 @@ export interface ICar {
   // bonus data, typically populated by the "Auto-fill from web" lookup.
   specs: ISpec[];
   features: string[];
+  // Free-form personal notes about the car (impressions, ownership notes, etc.).
+  notes: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,6 +72,7 @@ const CarSchema = new Schema<ICar>(
     media: { type: [MediaSchema], default: [] },
     specs: { type: [SpecSchema], default: [] },
     features: { type: [String], default: [] },
+    notes: { type: String, default: "", trim: true },
   },
   { timestamps: true }
 );

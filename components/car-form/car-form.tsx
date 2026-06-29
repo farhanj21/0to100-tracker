@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Loader2, Save, Gauge, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -56,6 +57,7 @@ const BLANK: CarInput = {
   media: [],
   specs: [],
   features: [],
+  notes: "",
 };
 
 export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
@@ -323,6 +325,20 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             setValue("features", next, { shouldDirty: true, shouldValidate: true })
           }
         />
+      </Section>
+
+      {/* Notes */}
+      <Section
+        title="Notes"
+        subtitle="Free-form notes about this car — impressions, ownership history, anything worth remembering."
+      >
+        <Field label="Notes" error={errors.notes?.message}>
+          <Textarea
+            rows={5}
+            placeholder="Add any notes about this car…"
+            {...register("notes")}
+          />
+        </Field>
       </Section>
 
       {/* Media */}

@@ -22,6 +22,7 @@ type LeanCar = {
   media: { type: CarDTO["media"][number]["type"]; path: string }[];
   specs?: { label: string; value: string }[];
   features?: string[];
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -42,6 +43,7 @@ function toDTO(doc: LeanCar): Omit<CarDTO, "position" | "slug"> {
     media: (doc.media ?? []).map((m) => ({ type: m.type, path: m.path })),
     specs: (doc.specs ?? []).map((s) => ({ label: s.label, value: s.value })),
     features: doc.features ?? [],
+    notes: doc.notes ?? "",
     createdAt: new Date(doc.createdAt).toISOString(),
     updatedAt: new Date(doc.updatedAt).toISOString(),
   };

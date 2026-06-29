@@ -209,6 +209,18 @@ export default async function CarDetailPage({
           </ul>
         </div>
       )}
+
+      {/* Notes */}
+      {car.notes.trim().length > 0 && (
+        <div>
+          <SectionHeading>Notes</SectionHeading>
+          <div className="border border-border bg-card p-4 sm:p-5">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+              {car.notes}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

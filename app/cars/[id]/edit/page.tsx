@@ -35,6 +35,7 @@ export default async function EditCarPage({
     media: car.media,
     specs: car.specs,
     features: car.features,
+    notes: car.notes,
   };
 
   return (

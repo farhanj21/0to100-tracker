@@ -47,6 +47,7 @@ export const carInputSchema = z.object({
   media: z.array(mediaSchema).default([]),
   specs: z.array(specSchema).max(60).default([]),
   features: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
+  notes: z.string().trim().max(5000).optional().default(""),
 });
 
 export type CarInput = z.infer<typeof carInputSchema>;
