@@ -52,40 +52,43 @@ export default function RootLayout({
         <div className="grain" aria-hidden />
         <SiteHeader />
         <main className="container py-8">{children}</main>
-        <footer className="mt-16 border-t border-border/60">
-          <div className="container flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="mt-1 border-t border-border/60">
+          {/* Grid drives both layouts without duplicating content. Mobile rows:
+              "sign-off | built-by" then a centered colophon spanning both cols.
+              Desktop: sign-off spans both rows on the left, credits stack right. */}
+          <div className="container grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 py-6 [grid-template-areas:'signoff_builtby'] sm:[grid-template-areas:'signoff_builtby'_'signoff_colophon']">
             {/* Editorial sign-off */}
-            <p className="font-display text-2xl tracking-tight sm:text-3xl">
+            <p className="font-display text-2xl tracking-tight [grid-area:signoff] sm:text-3xl">
               Quickest <span className="italic">first</span>
               <span className="text-primary">.</span>
             </p>
 
-            {/* Credits + colophon */}
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:items-end">
-              <span className="flex items-center gap-1.5">
-                Built by
-                <a
-                  href="https://github.com/farhanj21"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-foreground/80 transition-colors hover:text-primary"
-                >
-                  Kensu
-                </a>
-                <span className="text-muted-foreground/50">&</span>
-                <a
-                  href="https://github.com/vroslmend"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-foreground/80 transition-colors hover:text-primary"
-                >
-                  Vroslmend
-                </a>
-              </span>
-              <span className="font-mono uppercase tracking-[0.16em] text-muted-foreground/60">
-                0–100 · Acceleration board · {new Date().getFullYear()}
-              </span>
-            </div>
+            {/* Credits — right of the sign-off on every breakpoint */}
+            <span className="flex items-center gap-1.5 justify-self-end text-xs text-muted-foreground [grid-area:builtby]">
+              Built by
+              <a
+                href="https://github.com/farhanj21"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                Kensu
+              </a>
+              <span className="text-muted-foreground/50">&</span>
+              <a
+                href="https://github.com/vroslmend"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                Vroslmend
+              </a>
+            </span>
+
+            {/* Colophon — hidden on mobile, right-aligned under the credits on desktop */}
+            <span className="hidden font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground/60 [grid-area:colophon] sm:block sm:justify-self-end sm:text-right">
+              0–100 · Acceleration board · {new Date().getFullYear()}
+            </span>
           </div>
         </footer>
         <Toaster />

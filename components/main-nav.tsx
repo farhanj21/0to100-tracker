@@ -31,17 +31,19 @@ export function MainNav() {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative px-2 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+              "group relative px-2 py-1 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             {link.label}
-            {active && (
+            {/* Underline grows from the centre outward on hover. The active
+                page is indicated by text colour alone, so it gets no underline. */}
+            {!active && (
               <span
                 aria-hidden
-                className="absolute inset-x-2 -bottom-0.5 h-0.5 bg-primary"
+                className="absolute inset-x-2 -bottom-0.5 h-0.5 origin-center scale-x-0 bg-primary transition-transform duration-300 ease-out group-hover:scale-x-100"
               />
             )}
           </Link>

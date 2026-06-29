@@ -41,6 +41,7 @@ export function LoginForm() {
     nextDigits[index] = digit;
     setDigitsAndClearError(nextDigits);
     if (index < CODE_LENGTH - 1) focusInput(index + 1);
+    maybeAutoSubmit(nextDigits);
   }
 
   function handleKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
@@ -71,11 +72,25 @@ export function LoginForm() {
     const nextDigits = Array.from({ length: CODE_LENGTH }, (_, i) => pasted[i] ?? "");
     setDigitsAndClearError(nextDigits);
     focusInput(Math.min(pasted.length, CODE_LENGTH - 1));
+    maybeAutoSubmit(nextDigits);
+  }
+
+  // Submit as soon as all four digits are present, without waiting for the
+  // button. Reads the freshly-built digits (state updates are async) and guards
+  // against firing while a request is already in flight.
+  function maybeAutoSubmit(nextDigits: string[]) {
+    const code = nextDigits.join("");
+    if (code.length === CODE_LENGTH && !submitting) submitCode(code);
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (passcode.length !== CODE_LENGTH) return;
+    submitCode(passcode);
+  }
+
+  async function submitCode(code: string) {
+    if (code.length !== CODE_LENGTH || submitting) return;
+    const passcode = code;
     setSubmitting(true);
     setError(null);
     try {
