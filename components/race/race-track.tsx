@@ -396,9 +396,10 @@ function RaceGraph({
     return w;
   }, [times]);
   const DOT = cars.length > 18 ? 8 : 11;
-  // Short label (with the result time) that survives the narrow, rotated cells.
-  const label = (car: CarDTO, i: number) =>
-    `${car.manufacturer} ${car.carModel} · ${formatTime(times[i])}s`;
+  // Rotated X-axis label: just the car name. The 0–100 time is redundant here
+  // (it's in the hover tooltip and the caption below) and dropping it keeps the
+  // vertical label short enough to read in full without truncation.
+  const label = (car: CarDTO) => `${car.manufacturer} ${car.carModel}`;
 
   return (
     <div className="space-y-2">
@@ -483,26 +484,27 @@ function RaceGraph({
         </div>
       </div>
 
-      {/* X axis — a rotated car label (with its 0–100 time) under each column */}
+      {/* X axis — a rotated car name under each column. The row is tall enough
+          to show the full name; the longest still ellipsis-clip as a safety net. */}
       <div className="flex">
         <div className="w-10 shrink-0" />
         <div className="flex flex-1">
           {cars.map((car, i) => (
             <div
               key={car.id}
-              className="flex h-20 min-w-0 flex-1 justify-center overflow-hidden"
+              className="flex h-36 min-w-0 flex-1 justify-center overflow-hidden"
             >
               <span
                 title={`${carTitle(car)} — ${formatTime(times[i])}s`}
                 style={{ writingMode: "vertical-rl" }}
                 className={cn(
-                  "max-h-20 overflow-hidden text-ellipsis whitespace-nowrap pt-1 text-[10px] leading-none",
+                  "max-h-36 overflow-hidden text-ellipsis whitespace-nowrap pt-1 text-[10px] leading-none",
                   i === winnerIdx
                     ? "font-semibold text-primary"
                     : "text-muted-foreground"
                 )}
               >
-                {label(car, i)}
+                {label(car)}
               </span>
             </div>
           ))}
