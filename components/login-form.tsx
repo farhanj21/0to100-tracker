@@ -122,7 +122,7 @@ export function LoginForm() {
           <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
             Restricted · 0–100
           </p>
-          <h1 className="mt-1.5 font-display text-3xl tracking-tight">Admin access</h1>
+          <h1 className="mt-1.5 font-display text-3xl tracking-tight">Admin Access</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the passcode to add, edit, or delete cars.
           </p>
@@ -176,10 +176,6 @@ export function LoginForm() {
           </Button>
         </form>
       </div>
-
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        Viewing the leaderboard doesn&apos;t require a passcode.
-      </p>
     </div>
   );
 }
