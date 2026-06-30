@@ -114,12 +114,6 @@ export default async function CarDetailPage({
             </span>
           </h1>
 
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission} ·{car.fuelType ? ` ${car.fuelType} ·` : ""}{" "}
-            {car.powertrainType}
-          </p>
-
           <div className="mt-7 border-t border-border pt-6">
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
               0–100 km/h
