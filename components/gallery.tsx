@@ -14,8 +14,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn, cloudinaryThumb, cloudinaryBlurFill } from "@/lib/utils";
-import { youTubeThumb, youTubeEmbedUrl } from "@/lib/youtube";
+import { youTubeThumb } from "@/lib/youtube";
 import { BlurUpImage } from "@/components/blur-up-image";
+import { YouTubeEmbed } from "@/components/youtube-embed";
 import type { MediaDTO } from "@/lib/types";
 
 export function Gallery({
@@ -215,15 +216,7 @@ export function Gallery({
                   className="max-h-[85vh] w-auto rounded-lg object-contain"
                 />
               ) : media[active].type === "youtube" ? (
-                <div className="aspect-video w-[90vw] max-w-4xl">
-                  <iframe
-                    src={`${youTubeEmbedUrl(media[active].path)}?autoplay=1&rel=0`}
-                    title="YouTube video player"
-                    className="h-full w-full rounded-lg"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
+                <YouTubeEmbed id={media[active].path} />
               ) : (
                 <video
                   src={media[active].path}
