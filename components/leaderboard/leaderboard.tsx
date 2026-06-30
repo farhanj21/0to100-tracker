@@ -141,7 +141,7 @@ export function Leaderboard({
   }
 
   return (
-    <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
+    <div className={cn("space-y-2 sm:space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
 
       <StatsStrip stats={stats} />
