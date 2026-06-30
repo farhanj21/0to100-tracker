@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
 import { getCarById } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
+import { assertValidCarOptions, OptionError } from "@/lib/options";
 import { deleteManyMedia } from "@/lib/storage";
 import { requireApiAuth } from "@/lib/auth";
 
@@ -52,6 +53,14 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     await dbConnect();
+    try {
+      await assertValidCarOptions(parsed.data);
+    } catch (e) {
+      if (e instanceof OptionError) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
+      throw e;
+    }
     const existing = await Car.findById(params.id);
     if (!existing) {
       return NextResponse.json({ error: "Car not found" }, { status: 404 });

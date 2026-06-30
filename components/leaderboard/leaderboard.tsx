@@ -28,9 +28,15 @@ const MAX_COMPARE = 3;
 export function Leaderboard({
   cars,
   stats,
+  options,
 }: {
   cars: CarDTO[];
   stats: LeaderboardStats;
+  options: {
+    powertrain: string[];
+    induction: string[];
+    transmission: string[];
+  };
 }) {
   const router = useRouter();
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
@@ -152,6 +158,9 @@ export function Leaderboard({
           value={filters}
           onChange={setFilters}
           manufacturers={manufacturers}
+          powertrains={options.powertrain}
+          inductions={options.induction}
+          transmissions={options.transmission}
           resultCount={filtered.length}
           totalCount={cars.length}
         />

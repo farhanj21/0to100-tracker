@@ -1,9 +1,6 @@
 import mongoose, { Schema, model, models, type Model } from "mongoose";
 import {
   FUEL_TYPES,
-  POWERTRAIN_TYPES,
-  TRANSMISSIONS,
-  INDUCTIONS,
   MEDIA_TYPES,
   type FuelType,
   type PowertrainType,
@@ -71,9 +68,12 @@ const CarSchema = new Schema<ICar>(
     engineSize: { type: Number, required: true, min: 0 },
     // Optional: omitted for electric cars (and legacy pre-split documents).
     fuelType: { type: String, enum: FUEL_TYPES },
-    powertrainType: { type: String, enum: POWERTRAIN_TYPES, required: true },
-    transmission: { type: String, enum: TRANSMISSIONS, required: true },
-    induction: { type: String, enum: INDUCTIONS, required: true },
+    // powertrainType / induction / transmission are validated at the API layer
+    // against the admin-managed option lists (lib/options.ts), so no static
+    // enum here — the allowed values change at runtime.
+    powertrainType: { type: String, required: true, trim: true },
+    transmission: { type: String, required: true, trim: true },
+    induction: { type: String, required: true, trim: true },
     // The core metric. Indexed because every leaderboard read sorts on it.
     zeroToHundred: { type: Number, required: true, min: 0, index: true },
     media: { type: [MediaSchema], default: [] },

@@ -20,18 +20,21 @@ import {
 import { MediaUploader } from "@/components/car-form/media-uploader";
 import { ExtraSpecsEditor } from "@/components/car-form/extra-specs-editor";
 import { carInputSchema, type CarInput } from "@/lib/validation";
-import {
-  FUEL_TYPES,
-  POWERTRAIN_TYPES,
-  TRANSMISSIONS,
-  INDUCTIONS,
-} from "@/lib/constants";
+import { FUEL_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { CarSpecsResult, SpecPair } from "@/lib/types";
+
+/** The admin-managed dropdown lists, supplied by the page rendering the form. */
+export interface CarFormOptions {
+  powertrain: string[];
+  induction: string[];
+  transmission: string[];
+}
 
 interface CarFormProps {
   mode: "create" | "edit";
   carId?: string;
+  options: CarFormOptions;
   defaultValues?: Partial<CarInput>;
 }
 
@@ -62,7 +65,7 @@ const BLANK: CarInput = {
   notes: "",
 };
 
-export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
+export function CarForm({ mode, carId, options, defaultValues }: CarFormProps) {
   const router = useRouter();
 
   const {
@@ -284,7 +287,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             <ControlledSelect
               control={control}
               name="powertrainType"
-              options={[...POWERTRAIN_TYPES]}
+              options={options.powertrain}
               placeholder="Select powertrain"
             />
           </Field>
@@ -310,7 +313,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             <ControlledSelect
               control={control}
               name="induction"
-              options={[...INDUCTIONS]}
+              options={options.induction}
               placeholder="Select induction"
             />
           </Field>
@@ -318,7 +321,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
             <ControlledSelect
               control={control}
               name="transmission"
-              options={[...TRANSMISSIONS]}
+              options={options.transmission}
               placeholder="Select transmission"
             />
           </Field>

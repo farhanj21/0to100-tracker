@@ -10,12 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FUEL_TYPES,
-  POWERTRAIN_TYPES,
-  TRANSMISSIONS,
-  INDUCTIONS,
-} from "@/lib/constants";
+import { FUEL_TYPES } from "@/lib/constants";
 
 export interface FilterState {
   search: string;
@@ -45,6 +40,9 @@ interface FiltersProps {
   value: FilterState;
   onChange: (next: FilterState) => void;
   manufacturers: string[];
+  powertrains: string[];
+  inductions: string[];
+  transmissions: string[];
   resultCount: number;
   totalCount: number;
 }
@@ -53,6 +51,9 @@ export function Filters({
   value,
   onChange,
   manufacturers,
+  powertrains,
+  inductions,
+  transmissions,
   resultCount,
   totalCount,
 }: FiltersProps) {
@@ -98,7 +99,7 @@ export function Filters({
           label="Powertrain"
           value={value.powertrainType}
           onValueChange={(v) => set("powertrainType", v)}
-          options={[...POWERTRAIN_TYPES]}
+          options={powertrains}
         />
 
         {/* Induction */}
@@ -106,7 +107,7 @@ export function Filters({
           label="Induction"
           value={value.induction}
           onValueChange={(v) => set("induction", v)}
-          options={[...INDUCTIONS]}
+          options={inductions}
         />
 
         {/* Transmission */}
@@ -114,7 +115,7 @@ export function Filters({
           label="Transmission"
           value={value.transmission}
           onValueChange={(v) => set("transmission", v)}
-          options={[...TRANSMISSIONS]}
+          options={transmissions}
         />
 
         {/* Year range */}

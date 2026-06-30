@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, AlertTriangle, Flag } from "lucide-react";
 import { getRankedCars } from "@/lib/cars";
+import { getOptionsMap, type OptionsMap } from "@/lib/options";
 import { leaderboardStats, type LeaderboardStats } from "@/lib/stats";
 import { BarRow } from "@/components/viz/bar-row";
 import { Breakdown } from "@/components/viz/breakdown";
@@ -21,10 +22,11 @@ export const metadata: Metadata = {
 
 export default async function NumbersPage() {
   let cars: CarDTO[] = [];
+  let options: OptionsMap | null = null;
   let error = false;
 
   try {
-    cars = await getRankedCars();
+    [cars, options] = await Promise.all([getRankedCars(), getOptionsMap()]);
   } catch (err) {
     console.error("Failed to load stats:", err);
     error = true;
@@ -47,12 +49,12 @@ export default async function NumbersPage() {
         </p>
       </header>
 
-      {error ? (
+      {error || !options ? (
         <ConnectionError />
       ) : cars.length === 0 ? (
         <Empty />
       ) : (
-        <NumbersBody cars={cars} stats={leaderboardStats(cars)} />
+        <NumbersBody cars={cars} stats={leaderboardStats(cars, options)} />
       )}
     </div>
   );
