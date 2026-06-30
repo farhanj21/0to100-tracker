@@ -1,9 +1,11 @@
 import mongoose, { Schema, model, models, type Model } from "mongoose";
 import {
+  FUEL_TYPES,
   POWERTRAIN_TYPES,
   TRANSMISSIONS,
   INDUCTIONS,
   MEDIA_TYPES,
+  type FuelType,
   type PowertrainType,
   type Transmission,
   type Induction,
@@ -26,6 +28,9 @@ export interface ICar {
   carModel: string;
   variant: string;
   engineSize: number;
+  // The combustion fuel. Absent on fully electric cars. Legacy documents
+  // created before fuel/powertrain were split also lack this field.
+  fuelType?: FuelType;
   powertrainType: PowertrainType;
   transmission: Transmission;
   induction: Induction;
@@ -64,6 +69,8 @@ const CarSchema = new Schema<ICar>(
     carModel: { type: String, required: true, trim: true },
     variant: { type: String, default: "", trim: true },
     engineSize: { type: Number, required: true, min: 0 },
+    // Optional: omitted for electric cars (and legacy pre-split documents).
+    fuelType: { type: String, enum: FUEL_TYPES },
     powertrainType: { type: String, enum: POWERTRAIN_TYPES, required: true },
     transmission: { type: String, enum: TRANSMISSIONS, required: true },
     induction: { type: String, enum: INDUCTIONS, required: true },

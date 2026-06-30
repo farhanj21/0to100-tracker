@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  FUEL_TYPES,
   POWERTRAIN_TYPES,
   TRANSMISSIONS,
   INDUCTIONS,
@@ -34,6 +35,14 @@ export const carInputSchema = z.object({
   powertrainType: z.enum(POWERTRAIN_TYPES, {
     errorMap: () => ({ message: "Select a powertrain type" }),
   }),
+  // Optional at the field level (electric cars have none); the cross-field
+  // refine below makes it required for every non-electric powertrain. An empty
+  // string from an unselected dropdown normalizes to undefined so it isn't
+  // persisted or validated against the enum.
+  fuelType: z
+    .union([z.enum(FUEL_TYPES), z.literal("")])
+    .optional()
+    .transform((v) => (v ? v : undefined)),
   transmission: z.enum(TRANSMISSIONS, {
     errorMap: () => ({ message: "Select a transmission" }),
   }),
@@ -48,6 +57,16 @@ export const carInputSchema = z.object({
   specs: z.array(specSchema).max(60).default([]),
   features: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
   notes: z.string().trim().max(5000).optional().default(""),
+}).superRefine((val, ctx) => {
+  // Fuel type is required for anything that burns fuel; only fully electric
+  // cars may leave it blank.
+  if (val.powertrainType !== "Electric" && !val.fuelType) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fuelType"],
+      message: "Select a fuel type",
+    });
+  }
 });
 
 export type CarInput = z.infer<typeof carInputSchema>;

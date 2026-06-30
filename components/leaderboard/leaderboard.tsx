@@ -62,6 +62,8 @@ export function Leaderboard({
       }
       if (filters.manufacturer !== "all" && car.manufacturer !== filters.manufacturer)
         return false;
+      if (filters.fuelType !== "all" && car.fuelType !== filters.fuelType)
+        return false;
       if (filters.powertrainType !== "all" && car.powertrainType !== filters.powertrainType)
         return false;
       if (filters.induction !== "all" && car.induction !== filters.induction)

@@ -1,6 +1,11 @@
 import "server-only";
 import { z } from "zod";
-import { POWERTRAIN_TYPES, TRANSMISSIONS, INDUCTIONS } from "@/lib/constants";
+import {
+  FUEL_TYPES,
+  POWERTRAIN_TYPES,
+  TRANSMISSIONS,
+  INDUCTIONS,
+} from "@/lib/constants";
 import { geminiGenerateJSON } from "@/lib/gemini";
 import type { CarSpecsResult } from "@/lib/types";
 
@@ -20,6 +25,7 @@ const specPairSchema = z.object({
 export const specsResultSchema = z.object({
   modelYear: z.number().int().min(1900).max(currentYear + 2).nullable(),
   engineSize: z.number().min(0).max(20).nullable(),
+  fuelType: z.enum(FUEL_TYPES).nullable(),
   powertrainType: z.enum(POWERTRAIN_TYPES).nullable(),
   transmission: z.enum(TRANSMISSIONS).nullable(),
   induction: z.enum(INDUCTIONS).nullable(),
@@ -37,6 +43,7 @@ const responseSchema = {
   properties: {
     modelYear: { type: "integer", nullable: true },
     engineSize: { type: "number", nullable: true },
+    fuelType: { type: "string", enum: [...FUEL_TYPES], nullable: true },
     powertrainType: { type: "string", enum: [...POWERTRAIN_TYPES], nullable: true },
     transmission: { type: "string", enum: [...TRANSMISSIONS], nullable: true },
     induction: { type: "string", enum: [...INDUCTIONS], nullable: true },
@@ -59,6 +66,7 @@ const responseSchema = {
   required: [
     "modelYear",
     "engineSize",
+    "fuelType",
     "powertrainType",
     "transmission",
     "induction",
@@ -88,7 +96,8 @@ export async function fetchCarSpecs(
   const system = [
     "You are an automotive specifications assistant. Given a car, return its specifications and features as JSON.",
     "Core fields (used to fill the form):",
-    `- powertrainType must be exactly one of: ${POWERTRAIN_TYPES.join(", ")}.`,
+    `- powertrainType must be exactly one of: ${POWERTRAIN_TYPES.join(", ")} (ICE = pure internal-combustion, no electric assist; Hybrid = self-charging/mild/full hybrid; Plug-In Hybrid = PHEV; Electric = battery electric, no combustion engine).`,
+    `- fuelType is the combustion fuel and must be exactly one of: ${FUEL_TYPES.join(", ")}. Use null ONLY for a fully Electric powertrain; for ICE, Hybrid and Plug-In Hybrid give the fuel the engine burns.`,
     `- transmission must be exactly one of: ${TRANSMISSIONS.join(", ")} (Auto = automatic, CVT, DCT, or AMT; Manual = manual).`,
     `- induction must be exactly one of: ${INDUCTIONS.join(", ")} (NA = naturally aspirated; Turbocharged = any forced induction, i.e. turbo or supercharged).`,
     "- engineSize is the engine displacement in litres as a number (e.g. 1.3, 2.0). Use null if unknown or not applicable.",

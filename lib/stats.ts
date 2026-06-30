@@ -1,4 +1,9 @@
-import { POWERTRAIN_TYPES, INDUCTIONS, TRANSMISSIONS } from "@/lib/constants";
+import {
+  FUEL_TYPES,
+  POWERTRAIN_TYPES,
+  INDUCTIONS,
+  TRANSMISSIONS,
+} from "@/lib/constants";
 import type { CarDTO } from "@/lib/types";
 
 export interface TimeBand {
@@ -35,6 +40,7 @@ export interface LeaderboardStats {
   median: number;
   spread: number;
   bands: TimeBand[];
+  fuels: CategoryStat[];
   powertrains: PowertrainStat[];
   induction: CategoryStat[];
   transmission: CategoryStat[];
@@ -122,6 +128,14 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
   };
   const notNull = <T,>(x: T | null): x is T => x !== null;
 
+  // Fuel split (Petrol/Diesel). Electric cars and legacy pre-split documents
+  // have no fuelType, so they simply don't appear in any band.
+  const fuels: CategoryStat[] = FUEL_TYPES.map((f) =>
+    cat(f, (c) => c.fuelType === f)
+  )
+    .filter(notNull)
+    .sort((a, b) => b.count - a.count);
+
   const induction: CategoryStat[] = INDUCTIONS.map((i) =>
     cat(i === "NA" ? "Naturally aspirated" : i, (c) => c.induction === i)
   )
@@ -187,6 +201,7 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
     median: median(times),
     spread: slowest.zeroToHundred - quickest.zeroToHundred,
     bands,
+    fuels,
     powertrains,
     induction,
     transmission,

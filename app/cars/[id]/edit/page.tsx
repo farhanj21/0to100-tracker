@@ -28,6 +28,7 @@ export default async function EditCarPage({
     carModel: car.carModel,
     variant: car.variant,
     engineSize: car.engineSize,
+    fuelType: car.fuelType,
     powertrainType: car.powertrainType,
     transmission: car.transmission,
     induction: car.induction,

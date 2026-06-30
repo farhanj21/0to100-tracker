@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ import { MediaUploader } from "@/components/car-form/media-uploader";
 import { ExtraSpecsEditor } from "@/components/car-form/extra-specs-editor";
 import { carInputSchema, type CarInput } from "@/lib/validation";
 import {
+  FUEL_TYPES,
   POWERTRAIN_TYPES,
   TRANSMISSIONS,
   INDUCTIONS,
@@ -50,6 +51,7 @@ const BLANK: CarInput = {
   variant: "",
   engineSize: "" as unknown as number,
   // Dropdowns start unselected so their placeholder shows.
+  fuelType: "" as unknown as CarInput["fuelType"],
   powertrainType: "" as unknown as CarInput["powertrainType"],
   transmission: "" as unknown as CarInput["transmission"],
   induction: "" as unknown as CarInput["induction"],
@@ -80,9 +82,21 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
   const featuresValue = watch("features");
   const manufacturerValue = watch("manufacturer");
   const carModelValue = watch("carModel");
+  const powertrainValue = watch("powertrainType");
+  const isElectric = powertrainValue === "Electric";
   const canAutoFill = Boolean(
     manufacturerValue?.toString().trim() && carModelValue?.toString().trim()
   );
+
+  // Electric cars burn no fuel — clear any selected fuel type so we never
+  // persist a stale value (and the conditional validation stays satisfied).
+  useEffect(() => {
+    if (isElectric) {
+      setValue("fuelType", "" as unknown as CarInput["fuelType"], {
+        shouldValidate: true,
+      });
+    }
+  }, [isElectric, setValue]);
 
   const [fetchingSpecs, setFetchingSpecs] = useState(false);
   const [foundSpecs, setFoundSpecs] = useState<CarSpecsResult | null>(null);
@@ -123,6 +137,12 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
       if (specs.powertrainType) {
         setValue("powertrainType", specs.powertrainType, opts);
         filled.push("powertrain");
+      }
+      // Only honor the fuel type for non-electric powertrains; the effect above
+      // clears it whenever the powertrain is electric.
+      if (specs.fuelType && specs.powertrainType !== "Electric") {
+        setValue("fuelType", specs.fuelType, opts);
+        filled.push("fuel");
       }
       if (specs.transmission) {
         setValue("transmission", specs.transmission, opts);
@@ -259,7 +279,7 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
 
       {/* Drivetrain */}
       <Section title="Drivetrain">
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Powertrain" error={errors.powertrainType?.message}>
             <ControlledSelect
               control={control}
@@ -267,6 +287,24 @@ export function CarForm({ mode, carId, defaultValues }: CarFormProps) {
               options={[...POWERTRAIN_TYPES]}
               placeholder="Select powertrain"
             />
+          </Field>
+          <Field
+            label="Fuel type"
+            error={errors.fuelType?.message}
+            hint={isElectric ? undefined : "The fuel the engine burns."}
+          >
+            {isElectric ? (
+              <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
+                Not applicable — fully electric
+              </div>
+            ) : (
+              <ControlledSelect
+                control={control}
+                name="fuelType"
+                options={[...FUEL_TYPES]}
+                placeholder="Select fuel type"
+              />
+            )}
           </Field>
           <Field label="Induction" error={errors.induction?.message}>
             <ControlledSelect
@@ -470,7 +508,7 @@ function Field({
   );
 }
 
-type EnumField = "powertrainType" | "transmission" | "induction";
+type EnumField = "fuelType" | "powertrainType" | "transmission" | "induction";
 
 function ControlledSelect({
   control,

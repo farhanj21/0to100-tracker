@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { Gauge, Wind, Cog, Fuel, Check } from "lucide-react";
+import { Gauge, Wind, Cog, Fuel, Zap, Check } from "lucide-react";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, formatEngine, formatGap } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
@@ -93,8 +93,13 @@ export function LeaderboardRow({
           <span className="inline-flex items-center gap-1">
             <Cog className="h-3 w-3 shrink-0" /> {car.transmission}
           </span>
+          {car.fuelType && (
+            <span className="hidden items-center gap-1 sm:inline-flex">
+              <Fuel className="h-3 w-3 shrink-0" /> {car.fuelType}
+            </span>
+          )}
           <span className="hidden items-center gap-1 sm:inline-flex">
-            <Fuel className="h-3 w-3 shrink-0" /> {car.powertrainType}
+            <Zap className="h-3 w-3 shrink-0" /> {car.powertrainType}
           </span>
         </div>
       </div>

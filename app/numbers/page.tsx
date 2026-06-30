@@ -111,6 +111,12 @@ function NumbersBody({ cars, stats }: { cars: CarDTO[]; stats: LeaderboardStats 
         </div>
       </Section>
 
+      {stats.fuels.length > 0 && (
+        <Section title="Fuel">
+          <Breakdown rows={stats.fuels} leaderId={leaderId} />
+        </Section>
+      )}
+
       <Section title="Powertrain">
         <Breakdown rows={stats.powertrains.map(ptRow)} leaderId={leaderId} />
       </Section>

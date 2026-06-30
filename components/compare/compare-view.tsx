@@ -39,6 +39,7 @@ export function CompareView({
         best: c.position === bestRank,
       })),
     },
+    { label: "Fuel", cells: cars.map((c) => ({ text: c.fuelType ?? "—" })) },
     { label: "Powertrain", cells: cars.map((c) => ({ text: c.powertrainType })) },
     { label: "Induction", cells: cars.map((c) => ({ text: c.induction })) },
     { label: "Transmission", cells: cars.map((c) => ({ text: c.transmission })) },

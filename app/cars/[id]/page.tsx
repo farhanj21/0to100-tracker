@@ -9,6 +9,7 @@ import {
   Wind,
   Cog,
   Zap,
+  Fuel,
   Hash,
   Check,
   Flag,
@@ -59,6 +60,9 @@ export default async function CarDetailPage({
   const specs = [
     { icon: Calendar, label: "Model year", value: String(car.modelYear) },
     { icon: Gauge, label: "Engine", value: formatEngine(car.engineSize) },
+    ...(car.fuelType
+      ? [{ icon: Fuel, label: "Fuel type", value: car.fuelType }]
+      : []),
     { icon: Zap, label: "Powertrain", value: car.powertrainType },
     { icon: Wind, label: "Induction", value: car.induction },
     { icon: Cog, label: "Transmission", value: car.transmission },
@@ -112,7 +116,8 @@ export default async function CarDetailPage({
 
           <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
             {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission} · {car.powertrainType}
+            {car.transmission} ·{car.fuelType ? ` ${car.fuelType} ·` : ""}{" "}
+            {car.powertrainType}
           </p>
 
           <div className="mt-7 border-t border-border pt-6">

@@ -10,11 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { POWERTRAIN_TYPES, TRANSMISSIONS, INDUCTIONS } from "@/lib/constants";
+import {
+  FUEL_TYPES,
+  POWERTRAIN_TYPES,
+  TRANSMISSIONS,
+  INDUCTIONS,
+} from "@/lib/constants";
 
 export interface FilterState {
   search: string;
   manufacturer: string; // "all" or a manufacturer name
+  fuelType: string;
   powertrainType: string;
   induction: string;
   transmission: string;
@@ -25,6 +31,7 @@ export interface FilterState {
 export const EMPTY_FILTERS: FilterState = {
   search: "",
   manufacturer: "all",
+  fuelType: "all",
   powertrainType: "all",
   induction: "all",
   transmission: "all",
@@ -76,6 +83,14 @@ export function Filters({
           value={value.manufacturer}
           onValueChange={(v) => set("manufacturer", v)}
           options={manufacturers}
+        />
+
+        {/* Fuel */}
+        <FilterSelect
+          label="Fuel"
+          value={value.fuelType}
+          onValueChange={(v) => set("fuelType", v)}
+          options={[...FUEL_TYPES]}
         />
 
         {/* Powertrain */}

@@ -131,7 +131,8 @@ export function LeaderHero({
             className="mt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
           >
             {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission} · {car.powertrainType}
+            {car.transmission} ·{car.fuelType ? ` ${car.fuelType} ·` : ""}{" "}
+            {car.powertrainType}
           </motion.p>
         </motion.div>
       </Link>
