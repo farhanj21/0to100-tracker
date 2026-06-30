@@ -72,7 +72,7 @@ export function Filters({
             <Search className="h-3 w-3" /> Search
           </label>
           <Input
-            placeholder="Manufacturer or model…"
+            placeholder="Manufacturer or model"
             value={value.search}
             onChange={(e) => set("search", e.target.value)}
           />

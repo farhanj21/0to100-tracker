@@ -14,6 +14,7 @@ import {
   Check,
   Flag,
 } from "lucide-react";
+import { Engine, Turbo } from "@/components/icons/automotive";
 import { getCarBySlug, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
@@ -63,8 +64,16 @@ export default async function CarDetailPage({
     ...(car.fuelType
       ? [{ icon: Fuel, label: "Fuel type", value: car.fuelType }]
       : []),
-    { icon: Zap, label: "Powertrain", value: car.powertrainType },
-    { icon: Wind, label: "Induction", value: car.induction },
+    {
+      icon: car.powertrainType === "ICE" ? Engine : Zap,
+      label: "Powertrain",
+      value: car.powertrainType,
+    },
+    {
+      icon: car.induction === "Turbocharged" ? Turbo : Wind,
+      label: "Induction",
+      value: car.induction,
+    },
     { icon: Cog, label: "Transmission", value: car.transmission },
     { icon: Hash, label: "Manufacturer", value: car.manufacturer },
   ];

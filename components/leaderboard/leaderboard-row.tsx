@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Gauge, Wind, Cog, Fuel, Zap, Check } from "lucide-react";
+import { Engine, Turbo } from "@/components/icons/automotive";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, formatEngine, formatGap } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
@@ -102,7 +103,12 @@ export function LeaderboardRow({
             <Gauge className="h-3 w-3 shrink-0" /> {formatEngine(car.engineSize)}
           </span>
           <span className="hidden items-center gap-1 sm:inline-flex">
-            <Wind className="h-3 w-3 shrink-0" /> {car.induction}
+            {car.induction === "Turbocharged" ? (
+              <Turbo className="h-3 w-3 shrink-0" />
+            ) : (
+              <Wind className="h-3 w-3 shrink-0" />
+            )}{" "}
+            {car.induction}
           </span>
           <span className="hidden items-center gap-1 sm:inline-flex">
             <Cog className="h-3 w-3 shrink-0" /> {car.transmission}
@@ -113,7 +119,12 @@ export function LeaderboardRow({
             </span>
           )}
           <span className="hidden items-center gap-1 sm:inline-flex">
-            <Zap className="h-3 w-3 shrink-0" /> {car.powertrainType}
+            {car.powertrainType === "ICE" ? (
+              <Engine className="h-3 w-3 shrink-0" />
+            ) : (
+              <Zap className="h-3 w-3 shrink-0" />
+            )}{" "}
+            {car.powertrainType}
           </span>
         </div>
       </div>
