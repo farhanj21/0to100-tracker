@@ -55,6 +55,12 @@ export function Leaderboard({
     [cars]
   );
 
+  // Full span of model years present, so the year slider can bound its thumbs.
+  const yearBounds = useMemo<[number, number]>(() => {
+    const years = cars.map((c) => c.modelYear);
+    return [Math.min(...years), Math.max(...years)];
+  }, [cars]);
+
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     const min = filters.yearMin ? parseInt(filters.yearMin, 10) : null;
@@ -161,6 +167,7 @@ export function Leaderboard({
           powertrains={options.powertrain}
           inductions={options.induction}
           transmissions={options.transmission}
+          yearBounds={yearBounds}
           resultCount={filtered.length}
           totalCount={cars.length}
         />

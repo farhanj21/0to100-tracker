@@ -117,6 +117,56 @@
   }
 }
 
+/* Dual-thumb year range slider (leaderboard filters). The two native range
+   inputs are stacked transparent over a shared rail; only the square thumbs
+   stay interactive so clicks fall through to whichever thumb is underneath. */
+.year-slider input[type="range"] {
+  pointer-events: none;
+}
+.year-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  height: 1.15rem;
+  width: 0.85rem;
+  border-radius: var(--radius);
+  background: hsl(var(--foreground));
+  border: 2px solid hsl(var(--card));
+  box-shadow: 0 0 0 1px hsl(var(--foreground));
+  cursor: grab;
+  transition: transform 0.12s ease;
+}
+.year-slider input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  height: 1.15rem;
+  width: 0.85rem;
+  border-radius: var(--radius);
+  background: hsl(var(--foreground));
+  border: 2px solid hsl(var(--card));
+  box-shadow: 0 0 0 1px hsl(var(--foreground));
+  cursor: grab;
+  transition: transform 0.12s ease;
+}
+.year-slider input[type="range"]::-moz-range-track {
+  background: transparent;
+}
+.year-slider input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.12);
+}
+.year-slider input[type="range"]:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.12);
+}
+.year-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px hsl(var(--ring));
+  outline: none;
+}
+.year-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 2px hsl(var(--ring));
+  outline: none;
+}
+
 /* Themed scrollbar driven by tokens. */
 ::-webkit-scrollbar {
   width: 10px;
