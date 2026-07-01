@@ -41,6 +41,7 @@ export function LeaderboardTable({
             <th className="px-4 py-3 font-normal">Manufacturer</th>
             <th className="px-4 py-3 font-normal">Model</th>
             <th className="px-4 py-3 font-normal">Engine</th>
+            <th className="px-4 py-3 font-normal">Fuel</th>
             <th className="px-4 py-3 font-normal">Powertrain</th>
             <th className="px-4 py-3 font-normal">Induction</th>
             <th className="px-4 py-3 font-normal">Trans.</th>
@@ -107,6 +108,9 @@ export function LeaderboardTable({
                 </td>
                 <td className="px-4 py-3 tabular-nums text-muted-foreground">
                   {formatEngine(car.engineSize)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {car.fuelType ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {car.powertrainType}

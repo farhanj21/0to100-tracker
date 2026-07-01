@@ -15,6 +15,7 @@ type LeanCar = {
   carModel: string;
   variant?: string;
   engineSize: number;
+  fuelType?: CarDTO["fuelType"];
   powertrainType: CarDTO["powertrainType"];
   transmission: CarDTO["transmission"];
   induction: CarDTO["induction"];
@@ -36,6 +37,7 @@ function toDTO(doc: LeanCar): Omit<CarDTO, "position" | "slug"> {
     carModel: doc.carModel,
     variant: doc.variant ?? "",
     engineSize: doc.engineSize,
+    fuelType: doc.fuelType,
     powertrainType: doc.powertrainType,
     transmission: doc.transmission,
     induction: doc.induction,

@@ -10,11 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { POWERTRAIN_TYPES, TRANSMISSIONS, INDUCTIONS } from "@/lib/constants";
+import { FUEL_TYPES } from "@/lib/constants";
 
 export interface FilterState {
   search: string;
   manufacturer: string; // "all" or a manufacturer name
+  fuelType: string;
   powertrainType: string;
   induction: string;
   transmission: string;
@@ -25,6 +26,7 @@ export interface FilterState {
 export const EMPTY_FILTERS: FilterState = {
   search: "",
   manufacturer: "all",
+  fuelType: "all",
   powertrainType: "all",
   induction: "all",
   transmission: "all",
@@ -38,6 +40,10 @@ interface FiltersProps {
   value: FilterState;
   onChange: (next: FilterState) => void;
   manufacturers: string[];
+  powertrains: string[];
+  inductions: string[];
+  transmissions: string[];
+  yearBounds: [number, number];
   resultCount: number;
   totalCount: number;
 }
@@ -46,6 +52,10 @@ export function Filters({
   value,
   onChange,
   manufacturers,
+  powertrains,
+  inductions,
+  transmissions,
+  yearBounds,
   resultCount,
   totalCount,
 }: FiltersProps) {
@@ -64,7 +74,7 @@ export function Filters({
             <Search className="h-3 w-3" /> Search
           </label>
           <Input
-            placeholder="Manufacturer or model…"
+            placeholder="Manufacturer or model"
             value={value.search}
             onChange={(e) => set("search", e.target.value)}
           />
@@ -78,12 +88,20 @@ export function Filters({
           options={manufacturers}
         />
 
+        {/* Fuel */}
+        <FilterSelect
+          label="Fuel"
+          value={value.fuelType}
+          onValueChange={(v) => set("fuelType", v)}
+          options={[...FUEL_TYPES]}
+        />
+
         {/* Powertrain */}
         <FilterSelect
           label="Powertrain"
           value={value.powertrainType}
           onValueChange={(v) => set("powertrainType", v)}
-          options={[...POWERTRAIN_TYPES]}
+          options={powertrains}
         />
 
         {/* Induction */}
@@ -91,7 +109,7 @@ export function Filters({
           label="Induction"
           value={value.induction}
           onValueChange={(v) => set("induction", v)}
-          options={[...INDUCTIONS]}
+          options={inductions}
         />
 
         {/* Transmission */}
@@ -99,33 +117,18 @@ export function Filters({
           label="Transmission"
           value={value.transmission}
           onValueChange={(v) => set("transmission", v)}
-          options={[...TRANSMISSIONS]}
+          options={transmissions}
         />
 
         {/* Year range */}
-        <div className="col-span-2 sm:col-span-1">
-          <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Year range
-          </label>
-          <div className="flex items-center gap-1.5">
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="From"
-              className="w-full lg:w-20"
-              value={value.yearMin}
-              onChange={(e) => set("yearMin", e.target.value)}
-            />
-            <span className="text-muted-foreground">–</span>
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="To"
-              className="w-full lg:w-20"
-              value={value.yearMax}
-              onChange={(e) => set("yearMax", e.target.value)}
-            />
-          </div>
+        <div className="col-span-2 lg:min-w-[220px] lg:flex-1">
+          <YearRangeSlider
+            min={yearBounds[0]}
+            max={yearBounds[1]}
+            yearMin={value.yearMin}
+            yearMax={value.yearMax}
+            onChange={(next) => onChange({ ...value, ...next })}
+          />
         </div>
       </div>
 
@@ -148,6 +151,98 @@ export function Filters({
             <X className="h-3 w-3" /> Clear
           </Button>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Dual-thumb year range slider. Values live in FilterState as strings, where an
+ * empty string means "no bound" — so a thumb parked on the data's min/max emits
+ * "" (keeps `isDirty`/Clear honest and matches the null-check in the filter).
+ */
+function YearRangeSlider({
+  min,
+  max,
+  yearMin,
+  yearMax,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  yearMin: string;
+  yearMax: string;
+  onChange: (next: { yearMin: string; yearMax: string }) => void;
+}) {
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  const lo = clamp(yearMin ? Number(yearMin) : min);
+  const hi = clamp(yearMax ? Number(yearMax) : max);
+
+  const span = Math.max(1, max - min);
+  const loPct = ((lo - min) / span) * 100;
+  const hiPct = ((hi - min) / span) * 100;
+
+  const emit = (nextLo: number, nextHi: number) =>
+    onChange({
+      yearMin: nextLo <= min ? "" : String(nextLo),
+      yearMax: nextHi >= max ? "" : String(nextHi),
+    });
+
+  // Only one distinct year in the field — a slider would be inert, so just
+  // state the year.
+  if (max <= min) {
+    return (
+      <div>
+        <label className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Year
+        </label>
+        <p className="font-mono text-sm tabular-nums text-foreground">{min}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-baseline justify-between gap-2">
+        <label className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Year range
+        </label>
+        <span className="font-mono text-[11px] tabular-nums text-foreground">
+          {lo}
+          <span className="mx-1 text-muted-foreground">–</span>
+          {hi}
+        </span>
+      </div>
+
+      <div className="year-slider relative flex h-10 items-center">
+        {/* Rail + selected span */}
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 bg-border" />
+        <div
+          className="pointer-events-none absolute top-1/2 h-[3px] -translate-y-1/2 bg-foreground"
+          style={{ left: `${loPct}%`, right: `${100 - hiPct}%` }}
+        />
+
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={lo}
+          aria-label="Earliest year"
+          onChange={(e) => emit(Math.min(Number(e.target.value), hi), hi)}
+          className="absolute inset-0 h-full w-full appearance-none bg-transparent"
+          // Keep the min thumb grabbable when both thumbs bunch up at the top end.
+          style={{ zIndex: loPct > 50 ? 4 : 3 }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={hi}
+          aria-label="Latest year"
+          onChange={(e) => emit(lo, Math.max(Number(e.target.value), lo))}
+          className="absolute inset-0 h-full w-full appearance-none bg-transparent"
+          style={{ zIndex: 4 }}
+        />
       </div>
     </div>
   );

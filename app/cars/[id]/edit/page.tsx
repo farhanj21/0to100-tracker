@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getCarBySlug } from "@/lib/cars";
+import { getOptionsMap } from "@/lib/options";
 import { CarForm } from "@/components/car-form/car-form";
 import { carTitle } from "@/lib/utils";
 import { isAuthenticated } from "@/lib/auth";
@@ -22,12 +23,15 @@ export default async function EditCarPage({
   // Canonicalise: an old id URL redirects to the readable slug.
   if (car.slug !== params.id) redirect(`/cars/${car.slug}/edit`);
 
+  const options = await getOptionsMap();
+
   const defaults: Partial<CarInput> = {
     modelYear: car.modelYear,
     manufacturer: car.manufacturer,
     carModel: car.carModel,
     variant: car.variant,
     engineSize: car.engineSize,
+    fuelType: car.fuelType,
     powertrainType: car.powertrainType,
     transmission: car.transmission,
     induction: car.induction,
@@ -51,7 +55,12 @@ export default async function EditCarPage({
         <p className="mt-1 text-muted-foreground">{carTitle(car)}</p>
       </div>
 
-      <CarForm mode="edit" carId={car.id} defaultValues={defaults} />
+      <CarForm
+        mode="edit"
+        carId={car.id}
+        options={options}
+        defaultValues={defaults}
+      />
     </div>
   );
 }

@@ -9,10 +9,12 @@ import {
   Wind,
   Cog,
   Zap,
+  Fuel,
   Hash,
   Check,
   Flag,
 } from "lucide-react";
+import { Engine, Turbo } from "@/components/icons/automotive";
 import { getCarBySlug, getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
@@ -59,8 +61,19 @@ export default async function CarDetailPage({
   const specs = [
     { icon: Calendar, label: "Model year", value: String(car.modelYear) },
     { icon: Gauge, label: "Engine", value: formatEngine(car.engineSize) },
-    { icon: Zap, label: "Powertrain", value: car.powertrainType },
-    { icon: Wind, label: "Induction", value: car.induction },
+    ...(car.fuelType
+      ? [{ icon: Fuel, label: "Fuel type", value: car.fuelType }]
+      : []),
+    {
+      icon: car.powertrainType === "ICE" ? Engine : Zap,
+      label: "Powertrain",
+      value: car.powertrainType,
+    },
+    {
+      icon: car.induction === "Turbocharged" ? Turbo : Wind,
+      label: "Induction",
+      value: car.induction,
+    },
     { icon: Cog, label: "Transmission", value: car.transmission },
     { icon: Hash, label: "Manufacturer", value: car.manufacturer },
   ];
@@ -109,11 +122,6 @@ export default async function CarDetailPage({
               {car.variant ? ` ${car.variant}` : ""}
             </span>
           </h1>
-
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission} · {car.powertrainType}
-          </p>
 
           <div className="mt-7 border-t border-border pt-6">
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">

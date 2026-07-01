@@ -28,9 +28,15 @@ const MAX_COMPARE = 3;
 export function Leaderboard({
   cars,
   stats,
+  options,
 }: {
   cars: CarDTO[];
   stats: LeaderboardStats;
+  options: {
+    powertrain: string[];
+    induction: string[];
+    transmission: string[];
+  };
 }) {
   const router = useRouter();
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
@@ -49,6 +55,12 @@ export function Leaderboard({
     [cars]
   );
 
+  // Full span of model years present, so the year slider can bound its thumbs.
+  const yearBounds = useMemo<[number, number]>(() => {
+    const years = cars.map((c) => c.modelYear);
+    return [Math.min(...years), Math.max(...years)];
+  }, [cars]);
+
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     const min = filters.yearMin ? parseInt(filters.yearMin, 10) : null;
@@ -61,6 +73,8 @@ export function Leaderboard({
         if (!haystack.includes(q)) return false;
       }
       if (filters.manufacturer !== "all" && car.manufacturer !== filters.manufacturer)
+        return false;
+      if (filters.fuelType !== "all" && car.fuelType !== filters.fuelType)
         return false;
       if (filters.powertrainType !== "all" && car.powertrainType !== filters.powertrainType)
         return false;
@@ -133,7 +147,7 @@ export function Leaderboard({
   }
 
   return (
-    <div className={cn("space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
+    <div className={cn("space-y-2 sm:space-y-10", compareMode && selectedIds.length > 0 && "pb-24")}>
       <LeaderHero car={hero} marginToNext={marginToNext} />
 
       <StatsStrip stats={stats} />
@@ -150,6 +164,10 @@ export function Leaderboard({
           value={filters}
           onChange={setFilters}
           manufacturers={manufacturers}
+          powertrains={options.powertrain}
+          inductions={options.induction}
+          transmissions={options.transmission}
+          yearBounds={yearBounds}
           resultCount={filtered.length}
           totalCount={cars.length}
         />

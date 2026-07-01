@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -38,6 +38,16 @@ export function SiteHeader() {
           {authed && (
             <>
               <span className="mx-1.5 h-5 w-px bg-border" aria-hidden />
+              <Button
+                asChild
+                size="icon"
+                variant="ghost"
+                className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              >
+                <Link href="/settings" aria-label="Settings" title="Settings">
+                  <Settings className="h-4 w-4" />
+                </Link>
+              </Button>
               <Button
                 asChild
                 size="sm"

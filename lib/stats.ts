@@ -1,5 +1,12 @@
-import { POWERTRAIN_TYPES, INDUCTIONS, TRANSMISSIONS } from "@/lib/constants";
+import { FUEL_TYPES } from "@/lib/constants";
 import type { CarDTO } from "@/lib/types";
+
+/** The admin-managed option lists the breakdowns iterate over. */
+export interface StatsOptions {
+  powertrain: string[];
+  induction: string[];
+  transmission: string[];
+}
 
 export interface TimeBand {
   /** Display label incl. unit, e.g. "6–7s" or the pooled tail "20s +". */
@@ -35,6 +42,7 @@ export interface LeaderboardStats {
   median: number;
   spread: number;
   bands: TimeBand[];
+  fuels: CategoryStat[];
   powertrains: PowertrainStat[];
   induction: CategoryStat[];
   transmission: CategoryStat[];
@@ -64,7 +72,10 @@ function median(xs: number[]): number {
  * once from the ranked field. `cars` is assumed ranked fastest→slowest (as
  * getRankedCars returns), so the "first match" of any subset is its quickest.
  */
-export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
+export function leaderboardStats(
+  cars: CarDTO[],
+  options: StatsOptions
+): LeaderboardStats {
   const times = cars.map((c) => c.zeroToHundred);
   const quickest = cars[0];
   const slowest = cars[cars.length - 1];
@@ -108,7 +119,7 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
   }
 
   const powertrains: PowertrainStat[] = [];
-  for (const type of POWERTRAIN_TYPES) {
+  for (const type of options.powertrain) {
     const of = cars.filter((c) => c.powertrainType === type);
     if (of.length) powertrains.push({ type, count: of.length, quickest: of[0] });
   }
@@ -122,13 +133,21 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
   };
   const notNull = <T,>(x: T | null): x is T => x !== null;
 
-  const induction: CategoryStat[] = INDUCTIONS.map((i) =>
+  // Fuel split (Petrol/Diesel). Electric cars and legacy pre-split documents
+  // have no fuelType, so they simply don't appear in any band.
+  const fuels: CategoryStat[] = FUEL_TYPES.map((f) =>
+    cat(f, (c) => c.fuelType === f)
+  )
+    .filter(notNull)
+    .sort((a, b) => b.count - a.count);
+
+  const induction: CategoryStat[] = options.induction.map((i) =>
     cat(i === "NA" ? "Naturally aspirated" : i, (c) => c.induction === i)
   )
     .filter(notNull)
     .sort((a, b) => b.count - a.count);
 
-  const transmission: CategoryStat[] = TRANSMISSIONS.map((t) =>
+  const transmission: CategoryStat[] = options.transmission.map((t) =>
     cat(t, (c) => c.transmission === t)
   )
     .filter(notNull)
@@ -187,6 +206,7 @@ export function leaderboardStats(cars: CarDTO[]): LeaderboardStats {
     median: median(times),
     spread: slowest.zeroToHundred - quickest.zeroToHundred,
     bands,
+    fuels,
     powertrains,
     induction,
     transmission,

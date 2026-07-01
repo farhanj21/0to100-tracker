@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, AlertTriangle } from "lucide-react";
 import { getRankedCars } from "@/lib/cars";
+import { getOptionsMap, type OptionsMap } from "@/lib/options";
 import { leaderboardStats } from "@/lib/stats";
 import { Leaderboard } from "@/components/leaderboard/leaderboard";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   let cars: CarDTO[] = [];
+  let options: OptionsMap | null = null;
   let error = false;
 
   try {
-    cars = await getRankedCars();
+    [cars, options] = await Promise.all([getRankedCars(), getOptionsMap()]);
   } catch (err) {
     console.error("Failed to load leaderboard:", err);
     error = true;
@@ -23,12 +25,16 @@ export default async function HomePage() {
     <div className="space-y-8">
       <PageIntro count={cars.length} />
 
-      {error ? (
+      {error || !options ? (
         <ConnectionError />
       ) : cars.length === 0 ? (
         <EmptyState />
       ) : (
-        <Leaderboard cars={cars} stats={leaderboardStats(cars)} />
+        <Leaderboard
+          cars={cars}
+          stats={leaderboardStats(cars, options)}
+          options={options}
+        />
       )}
     </div>
   );

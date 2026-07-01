@@ -1,4 +1,5 @@
 import type {
+  FuelType,
   PowertrainType,
   Transmission,
   Induction,
@@ -29,6 +30,8 @@ export interface CarDTO {
   carModel: string;
   variant: string;
   engineSize: number;
+  /** Combustion fuel. Absent on electric cars and legacy pre-split documents. */
+  fuelType?: FuelType;
   powertrainType: PowertrainType;
   transmission: Transmission;
   induction: Induction;
@@ -52,6 +55,7 @@ export interface CarDTO {
 export interface CarSpecsResult {
   modelYear: number | null;
   engineSize: number | null;
+  fuelType: FuelType | null;
   powertrainType: PowertrainType | null;
   transmission: Transmission | null;
   induction: Induction | null;

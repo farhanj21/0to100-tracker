@@ -93,45 +93,62 @@ export function LeaderHero({
             No.01
           </motion.span>
 
-          <motion.h2
-            variants={item}
-            className="mt-4 font-display text-4xl leading-none tracking-tight sm:text-5xl"
-          >
-            {car.manufacturer}{" "}
-            <span className="text-muted-foreground">{car.carModel}</span>
-          </motion.h2>
+          {/* Name + time. Mobile: the big time sits inline to the right of the
+              name on one baseline. Desktop (sm+): unchanged — name above, the
+              oversized time stacked below it. */}
+          <div className="mt-4 flex items-baseline justify-between gap-3 sm:mt-0 sm:block">
+            <motion.h2
+              variants={item}
+              className="font-display text-4xl leading-none tracking-tight sm:mt-4 sm:text-5xl"
+            >
+              {car.manufacturer}{" "}
+              <span className="text-muted-foreground">{car.carModel}</span>
+            </motion.h2>
 
-          <motion.div variants={item} className="mt-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-              0–100 km/h
-            </p>
-            <div className="-ml-1 mt-1 flex items-baseline gap-2">
-              <CountUp
-                value={car.zeroToHundred}
-                className="font-mono text-7xl font-bold leading-[0.78] tracking-tighter sm:text-[8.5rem]"
-              />
-              <span className="font-mono text-2xl text-muted-foreground">s</span>
-            </div>
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
-              {marginToNext > 0.0001 ? (
-                <>
-                  <span className="font-bold text-primary">
-                    {marginToNext.toFixed(2)} s
-                  </span>{" "}
-                  clear of P2
-                </>
-              ) : (
-                "Fastest on the board"
-              )}
-            </p>
-          </motion.div>
+            <motion.div variants={item} className="shrink-0 sm:mt-7">
+              {/* "0–100 km/h" caption: mobile drops it, desktop keeps it. */}
+              <p className="hidden font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground sm:block">
+                0–100 km/h
+              </p>
+              <div className="flex items-baseline gap-1 sm:-ml-1 sm:mt-1 sm:gap-2">
+                <CountUp
+                  value={car.zeroToHundred}
+                  className="font-mono text-5xl font-bold leading-[0.78] tracking-tighter sm:text-[8.5rem]"
+                />
+                <span className="font-mono text-lg text-muted-foreground sm:text-2xl">
+                  s
+                </span>
+              </div>
+
+              {/* Margin to P2 — shown under the time on desktop, hidden on mobile. */}
+              <p className="mt-4 hidden font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground sm:block">
+                {marginToNext > 0.0001 ? (
+                  <>
+                    <span className="font-bold text-primary">
+                      {marginToNext.toFixed(2)} s
+                    </span>{" "}
+                    clear of P2
+                  </>
+                ) : (
+                  "Fastest on the board"
+                )}
+              </p>
+            </motion.div>
+          </div>
 
           <motion.p
             variants={item}
-            className="mt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
+            className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground sm:text-left"
           >
-            {car.modelYear} · {formatEngine(car.engineSize)} · {car.induction} ·{" "}
-            {car.transmission} · {car.powertrainType}
+            {/* Transmission + fuel type (with their separators) drop on mobile. */}
+            <span>{car.modelYear}</span>
+            <span> · {formatEngine(car.engineSize)}</span>
+            <span> · {car.induction}</span>
+            <span className="hidden sm:inline"> · {car.transmission}</span>
+            {car.fuelType && (
+              <span className="hidden sm:inline"> · {car.fuelType}</span>
+            )}
+            <span> · {car.powertrainType}</span>
           </motion.p>
         </motion.div>
       </Link>

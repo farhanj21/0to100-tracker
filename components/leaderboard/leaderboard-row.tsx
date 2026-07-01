@@ -2,10 +2,20 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { Gauge, Wind, Cog, Fuel, Check } from "lucide-react";
+import { Gauge, Wind, Cog, Fuel, Zap, Check } from "lucide-react";
+import { Engine, Turbo } from "@/components/icons/automotive";
 import { CarThumb } from "@/components/car-thumb";
 import { cn, formatTime, formatEngine, formatGap } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
+
+/** Compact engine label for the cramped mobile row: a turbocharged car shows
+ *  "1.5T" instead of "1.5L" + a separate "Turbocharged" field. */
+function formatEngineMobile(car: CarDTO): string {
+  if (car.engineSize && car.induction === "Turbocharged") {
+    return `${car.engineSize.toFixed(1)}T`;
+  }
+  return formatEngine(car.engineSize);
+}
 
 export function LeaderboardRow({
   car,
@@ -84,17 +94,37 @@ export function LeaderboardRow({
         </h3>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs">
           <span className="tabular-nums">{car.modelYear}</span>
-          <span className="inline-flex items-center gap-1">
+          {/* Mobile: engine only, turbo folded into the value (e.g. "1.5T"). */}
+          <span className="inline-flex items-center gap-1 sm:hidden">
+            <Gauge className="h-3 w-3 shrink-0" /> {formatEngineMobile(car)}
+          </span>
+          {/* sm+: engine, then induction and transmission as their own fields. */}
+          <span className="hidden items-center gap-1 sm:inline-flex">
             <Gauge className="h-3 w-3 shrink-0" /> {formatEngine(car.engineSize)}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Wind className="h-3 w-3 shrink-0" /> {car.induction}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Cog className="h-3 w-3 shrink-0" /> {car.transmission}
+          <span className="hidden items-center gap-1 sm:inline-flex">
+            {car.induction === "Turbocharged" ? (
+              <Turbo className="h-3 w-3 shrink-0" />
+            ) : (
+              <Wind className="h-3 w-3 shrink-0" />
+            )}{" "}
+            {car.induction}
           </span>
           <span className="hidden items-center gap-1 sm:inline-flex">
-            <Fuel className="h-3 w-3 shrink-0" /> {car.powertrainType}
+            <Cog className="h-3 w-3 shrink-0" /> {car.transmission}
+          </span>
+          {car.fuelType && (
+            <span className="hidden items-center gap-1 sm:inline-flex">
+              <Fuel className="h-3 w-3 shrink-0" /> {car.fuelType}
+            </span>
+          )}
+          <span className="hidden items-center gap-1 sm:inline-flex">
+            {car.powertrainType === "ICE" ? (
+              <Engine className="h-3 w-3 shrink-0" />
+            ) : (
+              <Zap className="h-3 w-3 shrink-0" />
+            )}{" "}
+            {car.powertrainType}
           </span>
         </div>
       </div>

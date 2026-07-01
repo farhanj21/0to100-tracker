@@ -3,6 +3,7 @@ import dbConnect from "@/lib/db";
 import Car from "@/lib/models/Car";
 import { getRankedCars } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
+import { assertValidCarOptions, OptionError } from "@/lib/options";
 import { requireApiAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,14 @@ export async function POST(request: Request) {
     }
 
     await dbConnect();
+    try {
+      await assertValidCarOptions(parsed.data);
+    } catch (e) {
+      if (e instanceof OptionError) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
+      throw e;
+    }
     const created = await Car.create(parsed.data);
 
     return NextResponse.json({ id: String(created._id) }, { status: 201 });
