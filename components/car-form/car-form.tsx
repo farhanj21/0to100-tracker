@@ -291,11 +291,7 @@ export function CarForm({ mode, carId, options, defaultValues }: CarFormProps) {
               placeholder="Select powertrain"
             />
           </Field>
-          <Field
-            label="Fuel type"
-            error={errors.fuelType?.message}
-            hint={isElectric ? undefined : "The fuel the engine burns."}
-          >
+          <Field label="Fuel type" error={errors.fuelType?.message}>
             {isElectric ? (
               <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
                 Not applicable — fully electric
@@ -342,8 +338,8 @@ export function CarForm({ mode, carId, options, defaultValues }: CarFormProps) {
               step="any"
               inputMode="decimal"
               min={0}
-              placeholder="0–100 time in secs"
-              className="pl-9 font-mono text-lg"
+              placeholder="Enter 0–100 time in seconds"
+              className="pl-9"
               onKeyDown={blockNegativeKeys}
               {...register("zeroToHundred")}
             />
@@ -371,9 +367,9 @@ export function CarForm({ mode, carId, options, defaultValues }: CarFormProps) {
       {/* Notes */}
       <Section
         title="Notes"
-        subtitle="Free-form notes about this car — impressions, ownership history, anything worth remembering."
+        subtitle="Free-form notes about this car; impressions or anything worth remembering."
       >
-        <Field label="Notes" error={errors.notes?.message}>
+        <Field error={errors.notes?.message}>
           <Textarea
             rows={5}
             placeholder="Add any notes about this car…"
@@ -494,14 +490,14 @@ function Field({
   hint,
   children,
 }: {
-  label: string;
+  label?: string;
   error?: string;
   hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       {children}
       {hint && !error && (
         <p className="text-xs text-muted-foreground">{hint}</p>

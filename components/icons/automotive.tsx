@@ -1,4 +1,4 @@
-/** Automotive glyphs backed by the PNGs in /public/uploads/icons.
+/** Automotive glyphs backed by the PNGs in /public/icons.
  *
  *  The source art is solid black line-work, but the rows render on a dark
  *  surface in muted text colour. Drawing each PNG as a CSS mask filled with
@@ -33,10 +33,10 @@ function MaskIcon({
 
 /** Engine block — for ICE powertrains, in place of the generic bolt. */
 export function Engine({ className }: { className?: string }) {
-  return <MaskIcon src="/uploads/icons/engine_icon.png" className={className} />;
+  return <MaskIcon src="/icons/engine_icon.png" className={className} />;
 }
 
 /** Turbocharger — for turbocharged induction. */
 export function Turbo({ className }: { className?: string }) {
-  return <MaskIcon src="/uploads/icons/turbo_icon.png" className={className} />;
+  return <MaskIcon src="/icons/turbo_icon.png" className={className} />;
 }
