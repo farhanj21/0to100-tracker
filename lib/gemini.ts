@@ -35,19 +35,19 @@ interface GeminiResponse {
 }
 
 /**
- * Call Gemini and return the model's JSON text (constrained to `responseSchema`
- * via generationConfig). Throws a readable error on HTTP/quota/blocked/timeout.
+ * POST a generateContent request and return the candidate text. Shared by the
+ * JSON and grounded callers below; throws a readable error on
+ * HTTP/quota/blocked/timeout.
  */
-export async function geminiGenerateJSON(
-  systemInstruction: string,
-  userPrompt: string,
-  responseSchema: unknown
+async function geminiGenerate(
+  body: Record<string, unknown>,
+  timeoutMs: number
 ): Promise<string> {
   const { apiKey, model } = getGeminiConfig();
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;
   try {
@@ -57,15 +57,7 @@ export async function geminiGenerateJSON(
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey,
       },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema,
-          temperature: 0.2,
-        },
-      }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
   } catch (err) {
@@ -102,4 +94,48 @@ export async function geminiGenerateJSON(
   }
 
   return text;
+}
+
+/**
+ * Call Gemini and return the model's JSON text (constrained to `responseSchema`
+ * via generationConfig).
+ */
+export async function geminiGenerateJSON(
+  systemInstruction: string,
+  userPrompt: string,
+  responseSchema: unknown
+): Promise<string> {
+  return geminiGenerate(
+    {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.2,
+      },
+    },
+    30_000
+  );
+}
+
+/**
+ * Call Gemini with Google Search grounding enabled and return plain text. The
+ * API rejects structured output combined with search grounding, so callers use
+ * this for a research pass and then structure the notes with a second,
+ * ungrounded geminiGenerateJSON call.
+ */
+export async function geminiGenerateGrounded(
+  systemInstruction: string,
+  userPrompt: string
+): Promise<string> {
+  return geminiGenerate(
+    {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { temperature: 0.2 },
+    },
+    25_000
+  );
 }

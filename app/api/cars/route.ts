@@ -5,8 +5,11 @@ import { getRankedCars } from "@/lib/cars";
 import { carInputSchema } from "@/lib/validation";
 import { assertValidCarOptions, OptionError } from "@/lib/options";
 import { requireApiAuth } from "@/lib/auth";
+import { mirrorToSheetSafe } from "@/lib/sheet-sync";
 
 export const dynamic = "force-dynamic";
+// Writes push a mirror of the board to the Google Sheet (up to ~8s extra).
+export const maxDuration = 30;
 
 // GET /api/cars — full leaderboard, ranked fastest → slowest.
 export async function GET() {
@@ -47,6 +50,7 @@ export async function POST(request: Request) {
       throw e;
     }
     const created = await Car.create(parsed.data);
+    await mirrorToSheetSafe("create car");
 
     return NextResponse.json({ id: String(created._id) }, { status: 201 });
   } catch (err) {

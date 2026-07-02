@@ -5,6 +5,9 @@ import { fetchCarSpecs } from "@/lib/specs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+// The grounded (web search) research pass plus the structuring call can take
+// well over the 10s default.
+export const maxDuration = 60;
 
 const bodySchema = z.object({
   manufacturer: z.string().trim().min(1),

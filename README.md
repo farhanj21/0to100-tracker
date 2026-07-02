@@ -93,13 +93,17 @@ Generate a secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-## Auto-fill specs (free, Gemini)
+## Auto-fill specs (free, Gemini + Google Search)
 
 On the add/edit car form, **Auto-fill from web** looks up a car's specs so you
 don't type them by hand. Enter the manufacturer, model, and year, click the
 button, and it fills **engine size, powertrain, transmission, and induction**,
 then showcases everything it found (including an approximate **0–100 reference**).
 
+- **Web-grounded.** Lookups run in two steps: a Gemini call grounded in live
+  **Google Search** results researches the car, then a second schema-constrained
+  call structures the findings. If the research pass fails (quota/timeout) it
+  falls back to a memory-only lookup automatically.
 - **Free, no charges.** It uses Google Gemini's free tier. Add a free key (no
   card) from [Google AI Studio](https://aistudio.google.com/apikey) as
   `GEMINI_API_KEY` in `.env.local` (optionally `GEMINI_MODEL`). Without a key the
@@ -109,8 +113,33 @@ then showcases everything it found (including an approximate **0–100 reference
   since it sets the leaderboard rank.
 
 Flow: `components/car-form/car-form.tsx` → `POST /api/cars/fetch-specs`
-(auth-gated) → `lib/specs.ts` (zod-validated) → `lib/gemini.ts` (REST via
-`fetch`, no SDK).
+(auth-gated) → `lib/specs.ts` (grounded research + zod-validated structuring)
+→ `lib/gemini.ts` (REST via `fetch`, no SDK).
+
+The same pipeline powers the specs generated for cars imported from the Google
+Sheet (below).
+
+## Google Sheet two-way sync
+
+The [Sorted Table sheet](https://docs.google.com/spreadsheets/d/1DFBxwsICbicLR_CTJ797ZS357Zyy_Xfyot_VRMIOVs0/edit)
+and the leaderboard keep each other in step automatically — no Google Cloud
+keys, just an Apps Script inside the spreadsheet and one shared secret:
+
+- **Sheet → site (instant):** adding a row publishes that car within seconds,
+  specs auto-generated; editing a row updates its car (rows are pinned to cars
+  via a hidden **Car ID** column, so renames don't duplicate).
+- **Site → sheet:** any add/edit/delete on the site rewrites the sheet —
+  re-sorted, positions recomputed, the sheet's combined `Petrol / Hybrid`-style
+  powertrain labels preserved.
+- Row deletions in the sheet are ignored (delete on the site instead), invalid
+  rows are skipped and reported, and script-made writes never re-trigger the
+  sync, so the loop can't echo.
+
+Pieces: `scripts/google-apps-script/Code.gs` (lives in the sheet: onChange
+trigger + web app), `POST /api/sheet-sync` (secret-gated import + returns the
+canonical mirror), `lib/sheet-sync.ts` (diff/apply + mirror push),
+`lib/sheet-format.ts` (pure parsing/label logic). Set `SHEET_SYNC_SECRET` and
+`SHEET_WEBAPP_URL`, then follow **[docs/SHEET_SYNC_SETUP.md](docs/SHEET_SYNC_SETUP.md)**.
 
 ## Media storage (Cloudinary)
 

@@ -7,8 +7,11 @@ import { carInputSchema } from "@/lib/validation";
 import { assertValidCarOptions, OptionError } from "@/lib/options";
 import { deleteManyMedia } from "@/lib/storage";
 import { requireApiAuth } from "@/lib/auth";
+import { mirrorToSheetSafe } from "@/lib/sheet-sync";
 
 export const dynamic = "force-dynamic";
+// Writes push a mirror of the board to the Google Sheet (up to ~8s extra).
+export const maxDuration = 30;
 
 type Params = { params: { id: string } };
 
@@ -77,6 +80,7 @@ export async function PUT(request: Request, { params }: Params) {
     if (removedMedia.length) {
       await deleteManyMedia(removedMedia);
     }
+    await mirrorToSheetSafe("update car");
 
     return NextResponse.json({ id: String(existing._id) });
   } catch (err) {
@@ -103,6 +107,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     await deleteManyMedia(
       deleted.media.map((m) => ({ type: m.type, path: m.path }))
     );
+    await mirrorToSheetSafe("delete car");
 
     return NextResponse.json({ ok: true });
   } catch (err) {

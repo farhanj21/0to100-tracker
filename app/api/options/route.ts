@@ -7,8 +7,11 @@ import {
   OptionError,
 } from "@/lib/options";
 import { requireApiAuth } from "@/lib/auth";
+import { mirrorToSheetSafe } from "@/lib/sheet-sync";
 
 export const dynamic = "force-dynamic";
+// Renames cascade to cars and change sheet labels — mirror adds up to ~8s.
+export const maxDuration = 30;
 
 function isCategory(v: unknown): v is OptionCategory {
   return typeof v === "string" && (OPTION_CATEGORIES as readonly string[]).includes(v);
@@ -50,6 +53,8 @@ export async function PATCH(request: Request) {
       String(body?.oldValue ?? ""),
       String(body?.newValue ?? "")
     );
+    // The rename cascaded to cars, so the sheet's labels are stale — remirror.
+    await mirrorToSheetSafe("rename option");
     return NextResponse.json({ values });
   } catch (err) {
     if (err instanceof OptionError) {

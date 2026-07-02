@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { FUEL_TYPES } from "@/lib/constants";
 import { getOptionsMap } from "@/lib/options";
-import { geminiGenerateJSON } from "@/lib/gemini";
+import { geminiGenerateJSON, geminiGenerateGrounded } from "@/lib/gemini";
 import type { CarSpecsResult } from "@/lib/types";
 
 const currentYear = new Date().getFullYear();
@@ -43,6 +43,34 @@ export interface FetchSpecsInput {
   modelYear?: number;
 }
 
+/**
+ * Research pass: ask Gemini (grounded in live Google Search results) for the
+ * car's published figures as free text. Returns null instead of throwing so a
+ * grounding failure (quota, timeout) degrades to the memory-only lookup rather
+ * than failing the whole fetch.
+ */
+async function researchCarOnWeb(label: string): Promise<string | null> {
+  const system = [
+    "You are an automotive research assistant with access to Google Search.",
+    "Search for the car's published specifications (manufacturer pages, reputable spec databases, road tests) and report what you find as concise plain-text notes:",
+    "- One line per specification, with the figure AND its unit (e.g. 'Power: 389 hp', 'Kerb weight: 1640 kg').",
+    "- Cover: engine displacement (L), fuel type, whether it is pure combustion / hybrid / plug-in hybrid / electric, transmission type, turbo or naturally aspirated, 0-100 km/h time, power, torque, top speed, dimensions, wheelbase, kerb weight, boot space, fuel economy, fuel tank, seating, doors, body type, tyre size, brakes, suspension, price when new.",
+    "- Then a short list of notable equipment/features.",
+    "- If figures vary by trim or market, note which trim/market a figure belongs to.",
+    "- Only report figures you actually found; never invent numbers.",
+  ].join("\n");
+
+  try {
+    return await geminiGenerateGrounded(
+      system,
+      `Research the full specifications of: ${label}`
+    );
+  } catch (err) {
+    console.warn(`Grounded spec research failed for "${label}":`, err);
+    return null;
+  }
+}
+
 export async function fetchCarSpecs(
   input: FetchSpecsInput
 ): Promise<CarSpecsResult> {
@@ -56,6 +84,12 @@ export async function fetchCarSpecs(
   const label = `${modelYear ? `${modelYear} ` : ""}${manufacturer} ${carModel}${
     variant ? ` ${variant}` : ""
   }`.trim();
+
+  // Two-step pipeline: (1) research the car on the live web (Google Search
+  // grounding — can't be combined with JSON output in one call), then
+  // (2) structure the findings with the schema-constrained call below. When the
+  // research pass fails we fall back to the old memory-only single call.
+  const research = await researchCarOnWeb(label);
 
   // OpenAPI-subset schema handed to Gemini so the raw output is already well-shaped.
   const responseSchema = {
@@ -120,11 +154,19 @@ export async function fetchCarSpecs(
     "  control', 'LED matrix headlights', 'Lane-keep assist', 'Heated seats', 'Wireless CarPlay').",
     "",
     "- notes: one short sentence of caveats (e.g. trim or market variation), or null.",
-    "- sourceSummary: a brief note on the basis for these figures (e.g. 'manufacturer specifications / general knowledge'), or null.",
+    "- sourceSummary: a brief note on the basis for these figures (e.g. 'live web search' or 'general knowledge'), or null.",
     "Only include values you are reasonably confident about. Use null (core fields) or omit (specs/features) rather than guessing. Never fabricate data.",
+    ...(research
+      ? [
+          "",
+          "The user message includes RESEARCH NOTES gathered from a live Google Search about this exact car. Treat them as the primary source: prefer their figures over your own memory, and fall back to memory only for values the notes don't cover and you are confident about.",
+        ]
+      : []),
   ].join("\n");
 
-  const user = `Provide the full specifications and features for: ${label}`;
+  const user = research
+    ? `Provide the full specifications and features for: ${label}\n\nRESEARCH NOTES (from live web search):\n${research}`
+    : `Provide the full specifications and features for: ${label}`;
 
   const raw = await geminiGenerateJSON(system, user, responseSchema);
 
