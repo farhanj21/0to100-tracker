@@ -46,18 +46,21 @@ or an Atlas connection string, and add your **Cloudinary** credentials
 app/
   api/cars/route.ts            GET (ranked) · POST (create)
   api/cars/[id]/route.ts       GET · PUT · DELETE (cleans up media)
+  api/chat/route.ts            POST — site assistant (public, rate-limited)
   api/upload/route.ts          multipart media upload
   page.tsx                     leaderboard (home)
   cars/new, cars/[id], .../edit
 components/
   leaderboard/                 podium, rows, filters (Framer Motion)
   car-form/                    form + media uploader
+  chat/chat-assistant.tsx      floating site assistant widget
   gallery.tsx                  image/video gallery + lightbox
   ui/                          shadcn primitives
 lib/
   db.ts                        cached Mongoose connection
   models/Car.ts                Car schema (no stored position)
   cars.ts                      ranked reads (.lean, _id → id, computed position)
+  chat.ts                      assistant grounding (scoped prompt from live data)
   storage.ts                   file storage abstraction
   validation.ts                zod schemas
 scripts/seed.ts                fresh-DB seed (guarded; --force to wipe)
@@ -111,6 +114,31 @@ then showcases everything it found (including an approximate **0–100 reference
 Flow: `components/car-form/car-form.tsx` → `POST /api/cars/fetch-specs`
 (auth-gated) → `lib/specs.ts` (zod-validated) → `lib/gemini.ts` (REST via
 `fetch`, no SDK).
+
+## Chat assistant (free, Gemini)
+
+A floating **"Ask the board"** widget (bottom-right, every page) answers
+questions about the cars on the leaderboard — times, ranks, full spec sheets,
+board stats, and head-to-head comparisons ("is the M340i quicker than the
+Golf R?"). It is strictly scoped: every request grounds the model in a live
+snapshot of the database plus a site guide, and it refuses anything else —
+general knowledge, cars not on the board, prompt-injection attempts — with a
+standard "board only" line.
+
+- **Free, no charges.** Same free-tier `GEMINI_API_KEY` as auto-fill — one key
+  powers both. No vector DB, no paid infra: the whole (small) board rides along
+  in the prompt, and answers come back as plain JSON over `fetch`.
+- **Quota-protected.** The API applies a sliding-window rate limit
+  (8/min per client, 20/min globally, in-memory) so a busy day parks politely
+  inside the free tier instead of erroring — and message/history sizes are
+  capped server-side.
+- **Public but read-only.** Chatting needs no login (it only reads what the
+  leaderboard already shows). Without a key the widget still renders and simply
+  replies that it isn't configured.
+
+Flow: `components/chat/chat-assistant.tsx` → `POST /api/chat` (zod-validated,
+rate-limited) → `lib/chat.ts` (builds the scoped system prompt from
+`getRankedCars()`) → `lib/gemini.ts` (`geminiChat`, multi-turn REST).
 
 ## Media storage (Cloudinary)
 

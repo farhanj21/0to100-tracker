@@ -12,6 +12,11 @@ interface GeminiConfig {
   model: string;
 }
 
+/** True when a Gemini key is present — callers can fail fast with their own copy. */
+export function isGeminiConfigured(): boolean {
+  return Boolean(process.env.GEMINI_API_KEY);
+}
+
 export function getGeminiConfig(): GeminiConfig {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -34,15 +39,29 @@ interface GeminiResponse {
   error?: { message?: string };
 }
 
+/** One conversation turn in Gemini's wire format ("model" = the assistant). */
+export interface GeminiTurn {
+  role: "user" | "model";
+  text: string;
+}
+
+/** Feature-specific wording for errors the shared layer can't phrase itself. */
+interface ErrorCopy {
+  timeout: string;
+  network: string;
+  /** Prefix for a plain HTTP failure, e.g. "Spec lookup failed". */
+  failLabel: string;
+}
+
 /**
- * Call Gemini and return the model's JSON text (constrained to `responseSchema`
- * via generationConfig). Throws a readable error on HTTP/quota/blocked/timeout.
+ * POST a generateContent payload with a hard 30s timeout. HTTP/quota errors are
+ * mapped to readable messages; network-level ones use the caller's wording so
+ * each feature keeps its own voice.
  */
-export async function geminiGenerateJSON(
-  systemInstruction: string,
-  userPrompt: string,
-  responseSchema: unknown
-): Promise<string> {
+async function geminiRequest(
+  payload: Record<string, unknown>,
+  copy: ErrorCopy
+): Promise<GeminiResponse> {
   const { apiKey, model } = getGeminiConfig();
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
@@ -57,22 +76,14 @@ export async function geminiGenerateJSON(
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey,
       },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema,
-          temperature: 0.2,
-        },
-      }),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
-      throw new Error("The lookup timed out. Please try again.");
+      throw new Error(copy.timeout);
     }
-    throw new Error("Couldn't reach the spec service. Check your connection.");
+    throw new Error(copy.network);
   } finally {
     clearTimeout(timeout);
   }
@@ -84,21 +95,92 @@ export async function geminiGenerateJSON(
       throw new Error("Free-tier limit reached — try again in a moment.");
     }
     throw new Error(
-      data.error?.message || `Spec lookup failed (HTTP ${res.status}).`
+      data.error?.message || `${copy.failLabel} (HTTP ${res.status}).`
     );
   }
+
+  return data;
+}
+
+/** Join the first candidate's text parts, or "" when the response held none. */
+function candidateText(data: GeminiResponse): string {
+  return (
+    data.candidates?.[0]?.content?.parts
+      ?.map((p) => p.text ?? "")
+      .join("")
+      .trim() ?? ""
+  );
+}
+
+/**
+ * Call Gemini and return the model's JSON text (constrained to `responseSchema`
+ * via generationConfig). Throws a readable error on HTTP/quota/blocked/timeout.
+ */
+export async function geminiGenerateJSON(
+  systemInstruction: string,
+  userPrompt: string,
+  responseSchema: unknown
+): Promise<string> {
+  const data = await geminiRequest(
+    {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.2,
+      },
+    },
+    {
+      timeout: "The lookup timed out. Please try again.",
+      network: "Couldn't reach the spec service. Check your connection.",
+      failLabel: "Spec lookup failed",
+    }
+  );
 
   if (data.promptFeedback?.blockReason) {
     throw new Error("The request was blocked. Try a different car name.");
   }
 
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((p) => p.text ?? "")
-    .join("")
-    .trim();
+  const text = candidateText(data);
 
   if (!text) {
     throw new Error("No usable data was returned. Enter the specs manually.");
+  }
+
+  return text;
+}
+
+/**
+ * Multi-turn plain-text chat for the site assistant. Takes the (strictly
+ * scoped) system instruction plus the conversation so far and returns the
+ * model's reply. Same free tier, same key as the spec lookup.
+ */
+export async function geminiChat(
+  systemInstruction: string,
+  turns: GeminiTurn[]
+): Promise<string> {
+  const data = await geminiRequest(
+    {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+      generationConfig: { temperature: 0.4 },
+    },
+    {
+      timeout: "The assistant timed out. Please try again.",
+      network: "Couldn't reach the assistant. Check your connection.",
+      failLabel: "The assistant request failed",
+    }
+  );
+
+  if (data.promptFeedback?.blockReason) {
+    throw new Error("That message was blocked. Try rephrasing it.");
+  }
+
+  const text = candidateText(data);
+
+  if (!text) {
+    throw new Error("The assistant couldn't produce a reply. Please try again.");
   }
 
   return text;
