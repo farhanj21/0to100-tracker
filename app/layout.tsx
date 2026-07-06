@@ -3,6 +3,7 @@ import { Instrument_Serif, Archivo, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
+import { ChatAssistant } from "@/components/chat/chat-assistant";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -91,6 +92,7 @@ export default function RootLayout({
             </span>
           </div>
         </footer>
+        <ChatAssistant />
         <Toaster />
       </body>
     </html>
