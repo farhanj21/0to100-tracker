@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Instrument_Serif, Archivo, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -90,6 +91,27 @@ export default function RootLayout({
             <span className="hidden font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground/60 [grid-area:colophon] sm:block sm:justify-self-end sm:text-right">
               0–100 · Acceleration board · {new Date().getFullYear()}
             </span>
+          </div>
+
+          {/* Quiet public entry point, styled like the colophon above it. */}
+          <div className="container border-t border-border/60 py-4">
+            <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground/60">
+              Got a run to prove?{" "}
+              <Link
+                href="/submit"
+                className="text-muted-foreground transition-colors hover:text-primary"
+              >
+                Submit it
+              </Link>
+              <span className="mx-2 text-muted-foreground/40">·</span>
+              Want yours tested?{" "}
+              <Link
+                href="/submit?tab=test"
+                className="text-muted-foreground transition-colors hover:text-primary"
+              >
+                Book a test
+              </Link>
+            </p>
           </div>
         </footer>
         <ChatAssistant />

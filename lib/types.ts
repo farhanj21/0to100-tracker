@@ -46,6 +46,32 @@ export interface CarDTO {
   updatedAt: string;
 }
 
+/** Client-safe shape of a public submission (see lib/models/Submission.ts). */
+export interface SubmissionDTO {
+  id: string;
+  kind: "run" | "test-request";
+  status: "pending" | "approved" | "rejected";
+  car: {
+    modelYear: number;
+    manufacturer: string;
+    carModel: string;
+    variant: string;
+    engineSize?: number;
+    powertrainType?: string;
+    transmission?: string;
+    induction?: string;
+  };
+  claimedZeroToHundred?: number;
+  measurementMethod?: string;
+  media: { type: "image" | "video"; path: string }[];
+  contact: string;
+  location?: string;
+  availability?: string;
+  notes: string;
+  reviewNote: string;
+  createdAt: string;
+}
+
 /**
  * Result of an auto-fill spec lookup (free Gemini tier). Every field is
  * nullable — the model returns null for anything it isn't confident about.

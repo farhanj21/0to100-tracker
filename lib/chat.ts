@@ -129,6 +129,7 @@ export async function buildChatSystemInstruction(): Promise<string> {
     "- Compare (/compare?cars=<slug>,<slug>) — side-by-side of up to 3 cars.",
     "- Numbers (/numbers) — aggregate stats and breakdowns for the whole board.",
     "- Race (/race) — an animated 0–100 drag-race replay of the field.",
+    "- Submit (/submit) — visitors can send in their own car: either a timed run with video proof, or a request to book a test where the owners drive the car and time the 0–100 themselves. Every submission is reviewed before it can join the board. If someone asks how to get their car on the board, point them to /submit.",
     "- Viewing is public; adding or editing cars needs the admin passcode at /login.",
     "- The site was built by Kensu and Vroslmend. Ranks are computed live from the stored times, never stored.",
     "",

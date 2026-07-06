@@ -31,3 +31,11 @@ export function getCloudinary() {
 /** Folder under which all media is stored in the Cloudinary account. */
 export const CLOUDINARY_FOLDER =
   process.env.CLOUDINARY_FOLDER || "0to100-tracker";
+
+/**
+ * Quarantine subfolder for public submission proof media. Kept inside
+ * CLOUDINARY_FOLDER so the delete-safety check in lib/storage.ts still covers
+ * it, but separate from admin uploads so unreviewed files never mingle with
+ * the board's own assets.
+ */
+export const SUBMISSIONS_FOLDER = `${CLOUDINARY_FOLDER}/submissions`;

@@ -19,13 +19,14 @@ export type SavedMedia = { type: MediaType; path: string };
 /** Upload a Buffer to Cloudinary via a stream and resolve the API response. */
 function uploadBuffer(
   buffer: Buffer,
-  filename: string
+  filename: string,
+  folder: string
 ): Promise<UploadApiResponse> {
   const cloudinary = getCloudinary();
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: CLOUDINARY_FOLDER,
+        folder,
         resource_type: "auto", // let Cloudinary detect image vs video
         // Keep a readable prefix in the public_id while staying unique.
         use_filename: true,
@@ -45,9 +46,12 @@ function uploadBuffer(
 }
 
 /** Persist a single uploaded File to Cloudinary and return its descriptor. */
-export async function saveFile(file: File): Promise<SavedMedia> {
+export async function saveFile(
+  file: File,
+  folder: string = CLOUDINARY_FOLDER
+): Promise<SavedMedia> {
   const buffer = Buffer.from(await file.arrayBuffer());
-  const result = await uploadBuffer(buffer, file.name || "upload");
+  const result = await uploadBuffer(buffer, file.name || "upload", folder);
 
   if (result.resource_type !== "image" && result.resource_type !== "video") {
     // Clean up the stray asset and reject unsupported types (e.g. raw/pdf).
@@ -63,8 +67,11 @@ export async function saveFile(file: File): Promise<SavedMedia> {
 }
 
 /** Save many files, preserving order. */
-export async function saveFiles(files: File[]): Promise<SavedMedia[]> {
-  return Promise.all(files.map((f) => saveFile(f)));
+export async function saveFiles(
+  files: File[],
+  folder: string = CLOUDINARY_FOLDER
+): Promise<SavedMedia[]> {
+  return Promise.all(files.map((f) => saveFile(f, folder)));
 }
 
 /**

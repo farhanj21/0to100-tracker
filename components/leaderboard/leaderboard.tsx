@@ -15,6 +15,7 @@ import {
   EMPTY_FILTERS,
   type FilterState,
 } from "@/components/leaderboard/filters";
+import { SubmitCtaRow } from "@/components/submit/submit-cta-row";
 import { Button } from "@/components/ui/button";
 import { cn, carTitle } from "@/lib/utils";
 import type { CarDTO } from "@/lib/types";
@@ -248,6 +249,10 @@ export function Leaderboard({
             </AnimatePresence>
           </motion.div>
         )}
+
+        {/* Public entry point — a ghost row inviting the next entry. Hidden
+            while picking cars to compare so it can't be mistaken for one. */}
+        {!compareMode && <SubmitCtaRow />}
       </section>
 
       <CompareBar
