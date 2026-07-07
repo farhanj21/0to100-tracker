@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
 import { ChatAssistant } from "@/components/chat/chat-assistant";
+import { FooterCredits } from "@/components/footer-credits";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -65,26 +66,7 @@ export default function RootLayout({
             </p>
 
             {/* Credits — right of the sign-off on every breakpoint */}
-            <span className="flex items-center gap-1.5 justify-self-end text-xs text-muted-foreground [grid-area:builtby]">
-              Built by
-              <a
-                href="https://github.com/farhanj21"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-foreground/80 transition-colors hover:text-primary"
-              >
-                Kensu
-              </a>
-              <span className="text-muted-foreground/50">&</span>
-              <a
-                href="https://github.com/vroslmend"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-foreground/80 transition-colors hover:text-primary"
-              >
-                Vroslmend
-              </a>
-            </span>
+            <FooterCredits />
 
             {/* Colophon — hidden on mobile, right-aligned under the credits on desktop */}
             <span className="hidden font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground/60 [grid-area:colophon] sm:block sm:justify-self-end sm:text-right">
