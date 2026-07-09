@@ -59,7 +59,7 @@ export default function RootLayout({
               sit in the true horizontal center, in line with the sign-off. */}
           <div className="container grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
             {/* Editorial sign-off */}
-            <p className="font-display text-lg tracking-tight sm:text-xl">
+            <p className="hidden font-display text-lg tracking-tight sm:block sm:text-xl">
               Quickest <span className="italic">first</span>
               <span className="text-primary">.</span>
             </p>

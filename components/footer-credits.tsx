@@ -11,7 +11,7 @@ export function FooterCredits() {
   return (
     <span
       ref={ref}
-      className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
+      className="col-start-2 flex items-center justify-center gap-2 text-xs text-muted-foreground"
     >
       Built by
       <a
