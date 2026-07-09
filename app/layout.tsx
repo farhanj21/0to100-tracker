@@ -55,23 +55,17 @@ export default function RootLayout({
         <SiteHeader />
         <main className="container py-8">{children}</main>
         <footer className="mt-1 border-t border-border/60">
-          {/* Grid drives both layouts without duplicating content. Mobile rows:
-              "sign-off | built-by" then a centered colophon spanning both cols.
-              Desktop: sign-off spans both rows on the left, credits stack right. */}
-          <div className="container grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 py-6 [grid-template-areas:'signoff_builtby'] sm:[grid-template-areas:'signoff_builtby'_'signoff_colophon']">
+          {/* The empty third column mirrors the sign-off column so the credits
+              sit in the true horizontal center, in line with the sign-off. */}
+          <div className="container grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3">
             {/* Editorial sign-off */}
-            <p className="font-display text-2xl tracking-tight [grid-area:signoff] sm:text-3xl">
+            <p className="font-display text-lg tracking-tight sm:text-xl">
               Quickest <span className="italic">first</span>
               <span className="text-primary">.</span>
             </p>
 
-            {/* Credits — right of the sign-off on every breakpoint */}
+            {/* Credits — centered in the footer, in line with the sign-off */}
             <FooterCredits />
-
-            {/* Colophon — hidden on mobile, right-aligned under the credits on desktop */}
-            <span className="hidden font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground/60 [grid-area:colophon] sm:block sm:justify-self-end sm:text-right">
-              0–100 · Acceleration board · {new Date().getFullYear()}
-            </span>
           </div>
         </footer>
         <ChatAssistant />

@@ -11,7 +11,7 @@ export function FooterCredits() {
   return (
     <span
       ref={ref}
-      className="flex items-center gap-2 justify-self-end text-xs text-muted-foreground [grid-area:builtby]"
+      className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
     >
       Built by
       <a
