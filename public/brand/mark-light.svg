@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" role="img" aria-label="0-100">
+  <title>0–100</title>
+  <g transform="translate(0 0)">
+    <rect width="64" height="64" rx="14" fill="#14130F"/>
+    <rect x="14" y="29" width="36" height="6" rx="3" fill="#3A3633"/>
+    <rect x="14" y="29" width="23" height="6" rx="3" fill="#1F4BBD"/>
+    <rect x="12.8" y="21" width="4.8" height="22" rx="2.4" fill="#1F4BBD"/>
+  </g>
+</svg>
