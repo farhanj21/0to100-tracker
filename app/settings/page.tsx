@@ -13,7 +13,10 @@ import {
 import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Settings · 0–100" };
+export const metadata = {
+  title: "Settings · 0–100",
+  robots: { index: false, follow: false },
+};
 
 export default async function SettingsPage() {
   if (!isAuthenticated()) redirect("/login?next=/settings");

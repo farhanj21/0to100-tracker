@@ -5,6 +5,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
 import { ChatAssistant } from "@/components/chat/chat-assistant";
 import { FooterCredits } from "@/components/footer-credits";
+import { JsonLd } from "@/components/json-ld";
+import {
+  CREATORS,
+  DEFAULT_OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -27,42 +37,40 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
-const title = "0–100 · Acceleration Board";
-const description =
-  "A live ranking of cars by their 0–100 km/h time, quickest first.";
-
-// Social cards need absolute image URLs. Prefer an explicit SITE_URL, fall back
-// to the production domain Vercel injects, then localhost for dev.
-const siteUrl =
-  process.env.SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
-
-// The share card is the static 1200×630 asset in public/brand (see its README).
-const ogImage = {
-  url: "/brand/og.png",
-  width: 1200,
-  height: 630,
-  alt: "0–100 — Acceleration leaderboard",
-};
-
+// Site-wide defaults. Public pages override title/description/canonical via
+// pageMetadata() (lib/seo.ts); the canonical is per page, never set here, or
+// every page would inherit the home page's.
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title,
-  description,
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: CREATORS,
+  category: "automotive",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     type: "website",
-    siteName: "0–100",
-    title,
-    description,
-    images: [ogImage],
+    siteName: SITE_NAME,
+    locale: "en_US",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title,
-    description,
-    images: [ogImage],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 
@@ -80,6 +88,7 @@ export default function RootLayout({
               "(function(){try{var t=localStorage.getItem('theme');var d=t? t==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
           }}
         />
+        <JsonLd data={websiteJsonLd()} />
       </head>
       <body
         className={`${instrumentSerif.variable} ${archivo.variable} ${spaceMono.variable} font-sans min-h-screen`}

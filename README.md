@@ -140,6 +140,28 @@ Flow: `components/car-form/car-form.tsx` → `POST /api/cars/fetch-specs`
 (auth-gated) → `lib/specs.ts` (zod-validated) → `lib/gemini.ts` (REST via
 `fetch`, no SDK).
 
+## Search & AI discoverability
+
+All of it lives outside the page content — metadata, structured data and
+machine-readable files, built from the same live data as the board.
+
+- **`/sitemap.xml`** (`app/sitemap.ts`) — the board, `/numbers` and every car,
+  with `lastModified` from each car's `updatedAt`. Built per request, so new
+  cars appear without a redeploy.
+- **`/robots.txt`** (`app/robots.ts`) — everything public is crawlable; `/api/`
+  and the admin screens are blocked.
+- **`/llms.txt`** and **`/llms-full.txt`** — the rankings, and every car's full
+  spec sheet, as Markdown for AI assistants ([llmstxt.org](https://llmstxt.org)).
+- **JSON-LD** — `WebSite` site-wide, a ranked `ItemList` on the board, and a
+  schema.org `Car` (0–100 as `accelerationTime`) plus breadcrumbs on each car.
+- **Metadata** (`lib/seo.ts`) — per-page canonical, description and share
+  card. Car pages get a one-sentence answer ("… does 0–100 km/h in 4.40 s,
+  ranked 3rd of 42 …") and their own photo as the share image. Race views, the
+  empty compare view and admin pages are `noindex`.
+
+Absolute URLs come from `SITE_URL` (falling back to Vercel's production
+domain), so set it if you use a custom domain.
+
 ## Media storage (Cloudinary)
 
 Uploads flow through the `/api/upload` route handler, which calls

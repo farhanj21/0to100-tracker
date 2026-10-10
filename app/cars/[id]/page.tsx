@@ -15,13 +15,27 @@ import {
   Flag,
 } from "lucide-react";
 import { Engine, Turbo } from "@/components/icons/automotive";
-import { getCarBySlug, getRankedCars } from "@/lib/cars";
+import { getRankedCars } from "@/lib/cars";
 import { isAuthenticated } from "@/lib/auth";
 import { Gallery } from "@/components/gallery";
 import { DeleteCarButton } from "@/components/delete-car-button";
 import { CountUp } from "@/components/count-up";
 import { Button } from "@/components/ui/button";
-import { formatEngine, carTitle, ordinal } from "@/lib/utils";
+import { JsonLd } from "@/components/json-ld";
+import {
+  formatEngine,
+  formatTime,
+  carTitle,
+  carFullTitle,
+  ordinal,
+} from "@/lib/utils";
+import {
+  carJsonLd,
+  carPath,
+  carShareImage,
+  carSummary,
+  pageMetadata,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +44,18 @@ export async function generateMetadata({
 }: {
   params: { id: string };
 }): Promise<Metadata> {
-  const car = await getCarBySlug(params.id);
+  // The full board (not just the car) so the description can state its rank.
+  const ranked = await getRankedCars();
+  const car =
+    ranked.find((c) => c.slug === params.id) ??
+    ranked.find((c) => c.id === params.id);
   if (!car) return { title: "Car not found · 0–100" };
-  return { title: `${carTitle(car)} · 0–100` };
+  return pageMetadata({
+    title: `${carFullTitle(car)}: 0–100 km/h in ${formatTime(car.zeroToHundred)} s · 0–100`,
+    description: carSummary(car, ranked.length),
+    path: carPath(car),
+    image: carShareImage(car),
+  });
 }
 
 export default async function CarDetailPage({
@@ -102,7 +125,11 @@ export default async function CarDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-10">
         {/* Gallery — "Set as thumbnail" only available to admins */}
-        <Gallery media={car.media} carId={authed ? car.id : undefined} />
+        <Gallery
+          media={car.media}
+          carId={authed ? car.id : undefined}
+          alt={carFullTitle(car)}
+        />
 
         {/* Headline + stat — mirrors the home cover-story language. */}
         <div className="flex flex-col justify-center">
@@ -229,6 +256,9 @@ export default async function CarDetailPage({
           </div>
         </div>
       )}
+
+      {/* Last child so the hidden script never picks up space-y margin. */}
+      <JsonLd data={carJsonLd(car, total)} />
     </div>
   );
 }

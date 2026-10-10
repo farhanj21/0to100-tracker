@@ -4,6 +4,7 @@ import { ArrowLeft, Flag, GitCompareArrows } from "lucide-react";
 import { getRankedCars } from "@/lib/cars";
 import { RaceTrack } from "@/components/race/race-track";
 import { Button } from "@/components/ui/button";
+import { pageMetadata } from "@/lib/seo";
 import type { CarDTO } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,13 @@ const MAX_RACE = 3;
 /** "Race all" uses the dense layout; cap high enough for the whole field. */
 const MAX_RACE_ALL = 60;
 
-export const metadata: Metadata = {
+// Every lane line-up is a query-string permutation of an animation, so race
+// views stay out of the index (their links are still followed).
+export const metadata: Metadata = pageMetadata({
   title: "Race · 0–100",
-};
+  description: "Cars running 0–100 km/h side by side, in real time.",
+  noindex: true,
+});
 
 export default async function RacePage({
   searchParams,

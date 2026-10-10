@@ -9,7 +9,10 @@ import { isAuthenticated } from "@/lib/auth";
 import type { CarInput } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Edit car · 0–100" };
+export const metadata = {
+  title: "Edit car · 0–100",
+  robots: { index: false, follow: false },
+};
 
 export default async function EditCarPage({
   params,

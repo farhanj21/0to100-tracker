@@ -22,10 +22,13 @@ import type { MediaDTO } from "@/lib/types";
 export function Gallery({
   media,
   carId,
+  alt = "",
 }: {
   media: MediaDTO[];
   /** When provided, enables the "Set as thumbnail" action on the detail page. */
   carId?: string;
+  /** Names the car in each image's alt text (e.g. "2022 BMW M340i"). */
+  alt?: string;
 }) {
   const router = useRouter();
   const [active, setActive] = useState<number | null>(null);
@@ -102,7 +105,7 @@ export function Gallery({
         onClick={() => setActive(0)}
         className="group relative block aspect-[4/3] w-full overflow-hidden bg-secondary ring-1 ring-border"
       >
-        <MediaTile media={hero} contain />
+        <MediaTile media={hero} contain alt={alt} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         {canManage && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
@@ -125,7 +128,7 @@ export function Gallery({
                 className="block h-full w-full"
                 aria-label="Open media"
               >
-                <MediaTile media={m} thumb />
+                <MediaTile media={m} thumb alt={photoAlt(alt, i + 2)} />
               </button>
               {canManage && (
                 <button
@@ -212,7 +215,7 @@ export function Gallery({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={media[active].path}
-                  alt=""
+                  alt={photoAlt(alt, active + 1)}
                   className="max-h-[85vh] w-auto rounded-lg object-contain"
                 />
               ) : media[active].type === "youtube" ? (
@@ -238,15 +241,22 @@ export function Gallery({
   );
 }
 
+/** "2022 BMW M340i — photo 2"; empty (decorative) when the car isn't named. */
+function photoAlt(alt: string, n: number): string {
+  return alt && n > 1 ? `${alt} — photo ${n}` : alt;
+}
+
 function MediaTile({
   media,
   thumb,
   contain,
+  alt = "",
 }: {
   media: MediaDTO;
   thumb?: boolean;
   /** Fit the whole image with a blurred fill behind it (no crop). */
   contain?: boolean;
+  alt?: string;
 }) {
   if (media.type === "image") {
     if (contain) {
@@ -254,7 +264,7 @@ function MediaTile({
         <BlurUpImage
           src={cloudinaryThumb(media.path, 720, 540, "fit")}
           blurSrc={cloudinaryBlurFill(media.path, 64, 48)}
-          alt=""
+          alt={alt}
           blurClassName="scale-110"
           className="relative h-full w-full object-contain [filter:contrast(1.04)_saturate(1.06)]"
         />
@@ -269,7 +279,7 @@ function MediaTile({
       <BlurUpImage
         src={src}
         blurSrc={thumb ? null : cloudinaryBlurFill(media.path, 48, 27)}
-        alt=""
+        alt={alt}
         className="h-full w-full object-cover [filter:contrast(1.04)_saturate(1.06)]"
       />
     );

@@ -101,6 +101,32 @@ export async function getCarBySlug(slugOrId: string): Promise<CarDTO | null> {
   );
 }
 
+/**
+ * Resolve a comma-separated `?cars=` list against the ranked board: trimmed,
+ * de-duplicated, capped at `max`, in request order. Accepts slugs (canonical)
+ * and falls back to raw ids for old links; unknown keys are dropped.
+ */
+export function pickCars(
+  ranked: CarDTO[],
+  param: string | string[] | undefined,
+  max: number
+): CarDTO[] {
+  const raw = Array.isArray(param) ? param.join(",") : param ?? "";
+  const requested = Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, max);
+  const bySlug = new Map(ranked.map((c) => [c.slug, c]));
+  const byId = new Map(ranked.map((c) => [c.id, c]));
+  return requested
+    .map((key) => bySlug.get(key) ?? byId.get(key))
+    .filter(Boolean) as CarDTO[];
+}
+
 /** Total number of cars on the board (for "X of Y" rank displays). */
 export async function getCarCount(): Promise<number> {
   await dbConnect();

@@ -10,15 +10,17 @@ import { StaticDistribution } from "@/components/viz/static-distribution";
 import { CountUp } from "@/components/count-up";
 import { Reveal } from "@/components/reveal";
 import { cn, formatTime } from "@/lib/utils";
+import { pageMetadata } from "@/lib/seo";
 import type { CarDTO } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "By the Numbers · 0–100",
   description:
     "The 0–100 field in aggregate: distribution, breakdowns, and records.",
-};
+  path: "/numbers",
+});
 
 export default async function NumbersPage() {
   let cars: CarDTO[] = [];

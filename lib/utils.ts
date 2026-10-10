@@ -25,6 +25,16 @@ export function carTitle(car: {
   return `${car.modelYear} ${car.manufacturer} ${car.carModel}`;
 }
 
+/** carTitle plus the variant when there is one: "2022 BMW M340i xDrive". */
+export function carFullTitle(car: {
+  modelYear: number;
+  manufacturer: string;
+  carModel: string;
+  variant?: string;
+}): string {
+  return car.variant ? `${carTitle(car)} ${car.variant}` : carTitle(car);
+}
+
 /** Turn a label into a URL-safe slug: "2022 Ferrari 488 Pista" -> "2022-ferrari-488-pista". */
 export function slugify(input: string): string {
   return input

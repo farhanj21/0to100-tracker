@@ -6,7 +6,10 @@ import { getOptionsMap } from "@/lib/options";
 import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Add a car · 0–100" };
+export const metadata = {
+  title: "Add a car · 0–100",
+  robots: { index: false, follow: false },
+};
 
 export default async function NewCarPage() {
   if (!isAuthenticated()) redirect("/login?next=/cars/new");

@@ -1,41 +1,56 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, Flag, GitCompareArrows } from "lucide-react";
-import { getRankedCars } from "@/lib/cars";
+import { getRankedCars, pickCars } from "@/lib/cars";
 import { CompareView } from "@/components/compare/compare-view";
 import { Button } from "@/components/ui/button";
-import type { CarDTO } from "@/lib/types";
+import { pageMetadata } from "@/lib/seo";
+import { carFullTitle, formatTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 /** Keep in sync with MAX_COMPARE in the leaderboard selection UI. */
 const MAX_COMPARE = 3;
 
-export const metadata: Metadata = {
-  title: "Compare · 0–100",
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { cars?: string };
+}): Promise<Metadata> {
+  const cars = pickCars(await getRankedCars(), searchParams.cars, MAX_COMPARE);
+  if (cars.length < 2) {
+    return pageMetadata({
+      title: "Compare · 0–100",
+      description: "Line up two or three cars and compare their 0–100 km/h times.",
+      noindex: true,
+    });
+  }
+
+  // Board order, so every permutation of the same line-up shares one canonical.
+  const ordered = [...cars].sort((a, b) => a.position - b.position);
+  const [lead, next] = ordered;
+  const gap = next.zeroToHundred - lead.zeroToHundred;
+  return pageMetadata({
+    title: `${ordered.map(carFullTitle).join(" vs ")} · Compare · 0–100`,
+    description:
+      `0–100 km/h head to head: ` +
+      ordered
+        .map((c) => `${carFullTitle(c)} ${formatTime(c.zeroToHundred)} s`)
+        .join(", ") +
+      (gap > 0.0001
+        ? `. The ${carFullTitle(lead)} is quickest by ${formatTime(gap)} s.`
+        : ". A dead heat at the front."),
+    path: `/compare?cars=${ordered.map((c) => c.slug).join(",")}`,
+  });
+}
 
 export default async function ComparePage({
   searchParams,
 }: {
   searchParams: { cars?: string };
 }) {
-  const requested = Array.from(
-    new Set(
-      (searchParams.cars ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    )
-  ).slice(0, MAX_COMPARE);
-
   const ranked = await getRankedCars();
-  const bySlug = new Map(ranked.map((c) => [c.slug, c]));
-  const byId = new Map(ranked.map((c) => [c.id, c]));
-  // Accept slugs (canonical) and fall back to raw ids for old links.
-  const cars = requested
-    .map((key) => bySlug.get(key) ?? byId.get(key))
-    .filter(Boolean) as CarDTO[];
+  const cars = pickCars(ranked, searchParams.cars, MAX_COMPARE);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">

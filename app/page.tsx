@@ -5,9 +5,13 @@ import { getOptionsMap, type OptionsMap } from "@/lib/options";
 import { leaderboardStats } from "@/lib/stats";
 import { Leaderboard } from "@/components/leaderboard/leaderboard";
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/json-ld";
+import { leaderboardJsonLd, pageMetadata } from "@/lib/seo";
 import type { CarDTO } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = pageMetadata({ path: "/" });
 
 export default async function HomePage() {
   let cars: CarDTO[] = [];
@@ -36,6 +40,9 @@ export default async function HomePage() {
           options={options}
         />
       )}
+
+      {/* Last child so the hidden script never picks up space-y margin. */}
+      {cars.length > 0 && <JsonLd data={leaderboardJsonLd(cars)} />}
     </div>
   );
 }
